@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<persistence xmlns="https://jakarta.ee/xml/ns/persistence" version="3.0">
+    <persistence-unit name="BanksysPU" transaction-type="JTA">
+        <jta-data-source>jdbc/bank_connection_resource</jta-data-source>
+        <properties>
+            <property name="jakarta.persistence.schema-generation.database.action" value="create"/>
+            <property name="jakarta.persistence.sharedCache,mode" value="NONE"/>
+            <property name="eclipslink.cache.shared.default" value="false"/>
+        </properties>
+    </persistence-unit>
+</persistence>

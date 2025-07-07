@@ -6,10 +6,10 @@
     <parent>
         <groupId>com.example.ee</groupId>
         <artifactId>Banking-System</artifactId>
-        <version>1.0-SNAPSHOT</version>
+        <version>1.0</version>
     </parent>
 
-    <artifactId>ejb</artifactId>
+    <artifactId>reporting</artifactId>
 
     <properties>
         <maven.compiler.source>11</maven.compiler.source>

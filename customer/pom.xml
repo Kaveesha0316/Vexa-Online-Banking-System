@@ -9,9 +9,9 @@
         <version>1.0</version>
     </parent>
 
-    <artifactId>web</artifactId>
-    <packaging>war</packaging>
-    <name>banking-system-web</name>
+    <artifactId>customer</artifactId>
+    <packaging>ejb</packaging>
+    <name>banking-system-ejb</name>
 
     <properties>
         <maven.compiler.source>11</maven.compiler.source>
@@ -19,17 +19,27 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
 
+    <build>
+        <finalName>${project.name}</finalName>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-ejb-plugin</artifactId>
+                <version>3.2.1</version>
+                <configuration>
+                    <generateClient>true</generateClient>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
     <dependencies>
         <dependency>
             <groupId>jakarta.platform</groupId>
-            <artifactId>jakarta.jakartaee-web-api</artifactId>
+            <artifactId>jakarta.jakartaee-api</artifactId>
             <version>10.0.0</version>
             <scope>provided</scope>
         </dependency>
     </dependencies>
-
-    <build>
-        <finalName>${project.name}</finalName>
-    </build>
 
 </project>
