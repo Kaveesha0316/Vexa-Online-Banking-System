@@ -2,6 +2,13 @@
 <persistence xmlns="https://jakarta.ee/xml/ns/persistence" version="3.0">
     <persistence-unit name="BanksysPU" transaction-type="JTA">
         <jta-data-source>jdbc/bank_connection_resource</jta-data-source>
+        <class>com.example.ee.core.model.Transaction</class>
+        <class>com.example.ee.core.model.Account</class>
+        <class>com.example.ee.core.model.User</class>
+        <class>com.example.ee.core.model.AuditLog</class>
+        <class>com.example.ee.core.model.Customer</class>
+        <class>com.example.ee.core.model.InterestAccrual</class>
+        <class>com.example.ee.core.model.ScheduledTransfer</class>
         <properties>
             <property name="jakarta.persistence.schema-generation.database.action" value="create"/>
             <property name="jakarta.persistence.sharedCache,mode" value="NONE"/>

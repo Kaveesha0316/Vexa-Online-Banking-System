@@ -1,13 +1,12 @@
 package com.example.ee.ejb.beans;
 
 import jakarta.ejb.Stateless;
+import jakarta.ejb.TransactionManagement;
 import jakarta.persistence.EntityManager;
-import jakarta.persistence.PersistenceContext;
 
 @Stateless
-public class Test {
+public class Test2 {
 
-    @PersistenceContext
-    private EntityManager em;
+
 
 }

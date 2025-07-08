@@ -814,30 +814,10 @@
                 </div>
             </div>
 
-            <div class="form-grid">
-                <div class="form-group">
-                    <label for="city">City <span>*</span></label>
-                    <div class="input-with-icon">
-                        <i class="fas fa-map-marker-alt"></i>
-                    <input type="text" id="city" placeholder="Enter city" required>
-                    </div>
-                </div>
 
-                <div class="form-group">
-                    <label for="state">State/Province</label>
-                    <select id="state">
-                        <option value="">Select state</option>
-                        <option value="CA">California</option>
-                        <option value="NY">New York</option>
-                        <option value="TX">Texas</option>
-                        <option value="FL">Florida</option>
-                        <option value="IL">Illinois</option>
-                    </select>
-                </div>
-            </div>
 
             <div class="form-actions">
-                <button type="submit" class="btn btn-primary">
+                <button type="submit" onclick="register();" class="btn btn-primary">
                     <i class="fas fa-arrow-right"></i> Continue to Account Setup
                 </button>
             </div>
@@ -889,6 +869,50 @@
             this.classList.add('active');
         });
     });
+
+    async function register() {
+        const firstName = document.getElementById("firstName").value;
+        const lastName = document.getElementById("lastName").value;
+        const email = document.getElementById("email").value;
+        const phone = document.getElementById("phone").value;
+        const dob = document.getElementById("dob").value;
+        const nic = document.getElementById("nic").value;
+        const address = document.getElementById("address").value;
+
+        const formData = new URLSearchParams();
+        formData.append("firstName", firstName);
+        formData.append("lastName", lastName);
+        formData.append("email", email);
+        formData.append("phone", phone);
+        formData.append("dob", dob);
+        formData.append("nic", nic);
+        formData.append("address", address);
+
+        try {
+            const response = await fetch("/banking-system/customer_register", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/x-www-form-urlencoded"
+                },
+                body: formData.toString()
+            });
+
+            const responseText = await response.text();
+            console.log("Server response:", responseText);
+
+            if (responseText.trim() === "success") {
+                alert("Login successful!");
+                // window.location.reload();
+            } else {
+                alert("Invalid username or password");
+            }
+        } catch (error) {
+            console.error("Fetch error:", error);
+            alert("Something went wrong. Try again.");
+        }
+    }
+
 </script>
+
 </body>
 </html>

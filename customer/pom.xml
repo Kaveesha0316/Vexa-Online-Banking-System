@@ -11,7 +11,7 @@
 
     <artifactId>customer</artifactId>
     <packaging>ejb</packaging>
-    <name>banking-system-ejb</name>
+    <name>banking-system-customer</name>
 
     <properties>
         <maven.compiler.source>11</maven.compiler.source>
@@ -39,6 +39,11 @@
             <artifactId>jakarta.jakartaee-api</artifactId>
             <version>10.0.0</version>
             <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.example.ee</groupId>
+            <artifactId>core</artifactId>
+            <version>1.0</version>
         </dependency>
     </dependencies>
 

@@ -22,7 +22,31 @@
     <dependencies>
         <dependency>
             <groupId>com.example.ee</groupId>
-            <artifactId>ejb</artifactId>
+            <artifactId>customer</artifactId>
+            <version>1.0</version>
+            <type>ejb</type>
+        </dependency>
+        <dependency>
+            <groupId>com.example.ee</groupId>
+            <artifactId>auth</artifactId>
+            <version>1.0</version>
+            <type>ejb</type>
+        </dependency>
+        <dependency>
+            <groupId>com.example.ee</groupId>
+            <artifactId>account</artifactId>
+            <version>1.0</version>
+            <type>ejb</type>
+        </dependency>
+        <dependency>
+            <groupId>com.example.ee</groupId>
+            <artifactId>transaction</artifactId>
+            <version>1.0</version>
+            <type>ejb</type>
+        </dependency>
+        <dependency>
+            <groupId>com.example.ee</groupId>
+            <artifactId>reporting</artifactId>
             <version>1.0</version>
             <type>ejb</type>
         </dependency>
@@ -37,6 +61,7 @@
             <artifactId>core</artifactId>
             <version>1.0</version>
         </dependency>
+
 
     </dependencies>
 
@@ -53,8 +78,28 @@
                     <modules>
                         <ejbModule>
                             <groupId>com.example.ee</groupId>
-                            <artifactId>ejb</artifactId>
-                            <bundleFileName>ejb-module.jar</bundleFileName>
+                            <artifactId>customer</artifactId>
+                            <bundleFileName>customer-module.jar</bundleFileName>
+                        </ejbModule>
+                        <ejbModule>
+                            <groupId>com.example.ee</groupId>
+                            <artifactId>auth</artifactId>
+                            <bundleFileName>auth-module.jar</bundleFileName>
+                        </ejbModule>
+                        <ejbModule>
+                            <groupId>com.example.ee</groupId>
+                            <artifactId>account</artifactId>
+                            <bundleFileName>account-module.jar</bundleFileName>
+                        </ejbModule>
+                        <ejbModule>
+                            <groupId>com.example.ee</groupId>
+                            <artifactId>transaction</artifactId>
+                            <bundleFileName>transaction-module.jar</bundleFileName>
+                        </ejbModule>
+                        <ejbModule>
+                            <groupId>com.example.ee</groupId>
+                            <artifactId>reporting</artifactId>
+                            <bundleFileName>reporting-module.jar</bundleFileName>
                         </ejbModule>
                         <webModule>
                             <groupId>com.example.ee</groupId>

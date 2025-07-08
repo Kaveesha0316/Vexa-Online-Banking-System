@@ -11,8 +11,12 @@
     <modules>
         <module>web</module>
         <module>ear</module>
-        <module>ejb</module>
+        <module>customer</module>
         <module>core</module>
+        <module>auth</module>
+        <module>account</module>
+        <module>transaction</module>
+        <module>reporting</module>
     </modules>
 
     <properties>
