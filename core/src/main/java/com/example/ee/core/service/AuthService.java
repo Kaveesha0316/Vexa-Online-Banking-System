@@ -8,5 +8,7 @@ public interface AuthService {
 
     void Save(User user);
     void update(User user);
-    User findByUserName(String userName);
+    User findByUserNameAndPassword(String userName, String password);
+    boolean isUserValid(String username, String password);
+
 }

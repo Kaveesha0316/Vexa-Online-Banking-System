@@ -817,7 +817,7 @@
 
 
             <div class="form-actions">
-                <button type="submit" onclick="register();" class="btn btn-primary">
+                <button type="button" onclick="register();" class="btn btn-primary">
                     <i class="fas fa-arrow-right"></i> Continue to Account Setup
                 </button>
             </div>
@@ -830,9 +830,10 @@
         </div>
     </div>
 </div>
-
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
-    // Toggle submenus
+
+// Toggle submenus
     document.querySelectorAll('.has-submenu > a').forEach(item => {
         item.addEventListener('click', function(e) {
             e.preventDefault();
@@ -870,47 +871,124 @@
         });
     });
 
-    async function register() {
-        const firstName = document.getElementById("firstName").value;
-        const lastName = document.getElementById("lastName").value;
-        const email = document.getElementById("email").value;
-        const phone = document.getElementById("phone").value;
-        const dob = document.getElementById("dob").value;
-        const nic = document.getElementById("nic").value;
-        const address = document.getElementById("address").value;
+async function register(event) {
+    // ✅ Prevent default form submission
+    if (event) event.preventDefault();
 
-        const formData = new URLSearchParams();
-        formData.append("firstName", firstName);
-        formData.append("lastName", lastName);
-        formData.append("email", email);
-        formData.append("phone", phone);
-        formData.append("dob", dob);
-        formData.append("nic", nic);
-        formData.append("address", address);
+    const firstName = document.getElementById("firstName").value.trim();
+    const lastName = document.getElementById("lastName").value.trim();
+    const email = document.getElementById("email").value.trim();
+    const phone = document.getElementById("phone").value.trim();
+    const dob = document.getElementById("dob").value.trim();
+    const nic = document.getElementById("nic").value.trim();
+    const address = document.getElementById("address").value.trim();
 
-        try {
-            const response = await fetch("/banking-system/customer_register", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/x-www-form-urlencoded"
-                },
-                body: formData.toString()
-            });
-
-            const responseText = await response.text();
-            console.log("Server response:", responseText);
-
-            if (responseText.trim() === "success") {
-                alert("Login successful!");
-                // window.location.reload();
-            } else {
-                alert("Invalid username or password");
-            }
-        } catch (error) {
-            console.error("Fetch error:", error);
-            alert("Something went wrong. Try again.");
-        }
+    // ✅ Check empty fields
+    if (!firstName || !lastName || !email || !phone || !dob || !nic || !address) {
+        Swal.fire({
+            icon: "error",
+            title: "Missing Fields",
+            text: "Please fill in all fields."
+        });
+        return;
     }
+
+    // ✅ Validate email
+    const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailPattern.test(email)) {
+        Swal.fire({
+            icon: "error",
+            title: "Invalid Email",
+            text: "Enter a valid email address."
+        });
+        return;
+    }
+
+    // ✅ Validate age >= 18
+    const birthDate = new Date(dob);
+    const today = new Date();
+    let age = today.getFullYear() - birthDate.getFullYear();
+    const m = today.getMonth() - birthDate.getMonth();
+    if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
+        age--;
+    }
+    if (age < 18) {
+        Swal.fire({
+            icon: "error",
+            title: "Underage",
+            text: "Customer must be at least 18 years old."
+        });
+        return;
+    }
+
+    // ✅ Validate Sri Lankan phone number
+    const slPhonePattern = /^(?:\+94|0)?7[01245678]\d{7}$/;
+    if (!slPhonePattern.test(phone)) {
+        Swal.fire({
+            icon: "error",
+            title: "Invalid Phone",
+            text: "Enter a valid Sri Lankan mobile number."
+        });
+        return;
+    }
+
+    // ✅ Validate NIC (old 9-digit or new 12-digit)
+    const nicPattern = /^(\d{9}[vVxX]|\d{12})$/;
+    if (!nicPattern.test(nic)) {
+        Swal.fire({
+            icon: "error",
+            title: "Invalid NIC",
+            text: "NIC must be 9 digits + V/X or 12 digits."
+        });
+        return;
+    }
+
+    // ✅ Send to server
+    const formData = new URLSearchParams();
+    formData.append("firstName", firstName);
+    formData.append("lastName", lastName);
+    formData.append("email", email);
+    formData.append("phone", phone);
+    formData.append("dob", dob);
+    formData.append("nic", nic);
+    formData.append("address", address);
+
+    try {
+        const response = await fetch("/banking-system/customer_register", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/x-www-form-urlencoded"
+            },
+            body: formData.toString()
+        });
+
+        const responseText = await response.text();
+        if (responseText.trim() === "success") {
+            Swal.fire({
+                icon: "success",
+                title: "Registration Complete",
+                text: "Customer successfully registered."
+            }).then(() => {
+                window.location.reload();
+            });
+        }else {
+            Swal.fire({
+                icon: "error",
+                title: responseText.trim(),
+                text: "Something went wrong. Please try again."
+            });
+        }
+    } catch (err) {
+        console.error("Error:", err);
+        Swal.fire({
+            icon: "error",
+            title: "Network Error",
+            text: "Unable to connect to server."
+        });
+    }
+}
+
+
 
 </script>
 

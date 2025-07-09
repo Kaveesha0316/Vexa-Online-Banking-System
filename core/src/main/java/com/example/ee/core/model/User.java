@@ -7,6 +7,9 @@ import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "users")
+@NamedQueries({
+        @NamedQuery(name = "user.findByUsernameAndPassword", query = "select u from User u where u.username=:username AND u.passwordHash=:password")
+})
 public class User implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

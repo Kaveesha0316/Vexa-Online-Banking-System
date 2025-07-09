@@ -5,6 +5,10 @@ import com.example.ee.core.service.CustomerService;
 import jakarta.ejb.Stateless;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
+import jakarta.persistence.TypedQuery;
+
+import java.util.List;
+import java.util.Optional;
 
 @Stateless
 public class CustomerServiceImpl implements CustomerService {
@@ -20,11 +24,27 @@ public class CustomerServiceImpl implements CustomerService {
 
     @Override
     public Customer findCustomerByEmail(String email) {
-        return null;
+
+            List<Customer> result = em.createNamedQuery("customer.findByEmail", Customer.class).setParameter("email", email).getResultList();
+
+        if (result.isEmpty()) {
+            return null; // or throw custom NotFoundException
+        } else {
+            return result.get(0);
+        }
+
+
     }
 
     @Override
-    public Customer findCustomerByNic(String nic) {
-        return null;
+    public   Customer findCustomerByNic(String nic) {
+
+            List<Customer> result = em.createNamedQuery("customer.findByNic", Customer.class).setParameter("nic", nic).getResultList();
+
+        if (result.isEmpty()) {
+            return null;
+        } else {
+            return result.get(0);
+        }
     }
 }

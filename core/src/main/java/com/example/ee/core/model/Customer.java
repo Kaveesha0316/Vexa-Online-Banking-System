@@ -10,6 +10,10 @@ import java.util.List;
 
 @Entity
 @Table(name = "customers")
+@NamedQueries({
+        @NamedQuery(name = "customer.findByEmail", query = "select c from Customer c where c.email=:email"),
+        @NamedQuery(name = "customer.findByNic", query = "select c from Customer c where c.nic=:nic")
+})
 public class Customer implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

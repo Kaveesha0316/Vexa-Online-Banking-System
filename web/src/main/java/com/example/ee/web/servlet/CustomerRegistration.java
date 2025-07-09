@@ -2,10 +2,12 @@ package com.example.ee.web.servlet;
 
 //import com.example.ee.core.bean.RegistrationOrchestratorBean;
 //import com.example.ee.core.model.Customer;
+import com.example.ee.core.mail.VerificationMail;
 import com.example.ee.core.model.Customer;
 import com.example.ee.core.model.Role;
 import com.example.ee.core.model.Status;
 import com.example.ee.core.model.User;
+import com.example.ee.core.povider.MailServiceProvider;
 import com.example.ee.core.service.AuthService;
 import com.example.ee.core.service.CustomerService;
 import jakarta.ejb.EJB;
@@ -50,9 +52,14 @@ public class CustomerRegistration extends HttpServlet {
         int year = Integer.parseInt(rs[0]);
         int month = Integer.parseInt(rs[1]);
         int day = Integer.parseInt(rs[2]);
-//
-//
-//
+
+            resp.setContentType("text/plain");
+
+        if (customerService.findCustomerByEmail(email) != null) {
+            resp.getWriter().write("email already in use");
+        }else if (customerService.findCustomerByNic(nic) != null) {
+            resp.getWriter().write("nic already in use");
+        }else{
             Customer customer = new Customer(firstName,lastName,email,phone,address,nic, LocalDate.of(year,month,day), LocalDateTime.now());
             Customer customer1 = customerService.createCustomer(customer);
 //
@@ -62,8 +69,13 @@ public class CustomerRegistration extends HttpServlet {
             User user = new User(customer1,username,password, Role.CUSTOMER, Status.ACTIVE, LocalDateTime.now(),LocalDateTime.now());
 
             authService.Save(user);
-            resp.setContentType("text/plain");
+
+            VerificationMail mail = new VerificationMail(email, username, password);
+            MailServiceProvider.getInstance().sendMail(mail);
+
             resp.getWriter().write("success");
+        }
+
         }catch (Exception e) {
             e.printStackTrace();
         }

@@ -469,7 +469,7 @@
                 <a href="#" class="forgot-password">Forgot Password?</a>
             </div>
 
-            <button type="submit" class="login-button">
+            <button onclick="signIn();" type="button" class="login-button">
                 <i class="fas fa-sign-in-alt"></i> Sign In
             </button>
 
@@ -498,7 +498,7 @@
         </form>
     </div>
 </div>
-
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
     // Toggle password visibility
     const togglePassword = document.querySelector('#togglePassword');
@@ -510,28 +510,59 @@
         this.innerHTML = type === 'password' ? '<i class="fas fa-eye"></i>' : '<i class="fas fa-eye-slash"></i>';
     });
 
-    // Form submission
-    const loginForm = document.querySelector('.login-form');
-    loginForm.addEventListener('submit', function(e) {
-        e.preventDefault();
+    async function signIn(event) {
+        // ✅ Prevent default form submission
+        if (event) event.preventDefault();
 
-        // Get input values
-        const username = document.getElementById('username').value;
-        const password = document.getElementById('password').value;
+        const username = document.getElementById("username").value.trim();
+        const password = document.getElementById("password").value.trim();
 
-        // Simple validation
-        if(username.trim() === '' || password.trim() === '') {
-            alert('Please enter both username and password');
+        // ✅ Check empty fields
+        if (!username || !password) {
+            Swal.fire({
+                icon: "error",
+                title: "Missing Fields",
+                text: "Please fill in all fields."
+            });
             return;
         }
 
-        // In a real application, you would send this to a server
-        // For this demo, simulate a successful login
-        alert(`Login successful! Welcome back, ${username}. Redirecting to dashboard...`);
 
-        // Redirect to dashboard (in a real app)
-        // window.location.href = 'dashboard.html';
-    });
+        const formData = new URLSearchParams();
+        formData.append("username", username);
+        formData.append("password", password);
+
+
+        try {
+            const response = await fetch("/banking-system/login", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/x-www-form-urlencoded"
+                },
+                body: formData.toString()
+            });
+
+            const responseText = await response.text();
+            if (responseText.trim() === "admin") {
+                window.location.replace("/banking-system/admin/adminDB.jsp");
+            }else if (responseText.trim() === "customer") {
+                window.location.replace("/banking-system/user/userDB.jsp");
+            }else {
+                Swal.fire({
+                    icon: "error",
+                    title: responseText.trim(),
+                    text: "Something went wrong. Please try again."
+                });
+            }
+        } catch (err) {
+            console.error("Error:", err);
+            Swal.fire({
+                icon: "error",
+                title: "Network Error",
+                text: "Unable to connect to server."
+            });
+        }
+    }
 
     // Security banner animation
     const securityBanner = document.querySelector('.security-banner');

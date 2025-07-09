@@ -6,6 +6,8 @@ import jakarta.ejb.Stateless;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 
+import java.util.List;
+
 @Stateless
 public class AuthServiceImpl implements AuthService {
 
@@ -23,7 +25,27 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
-    public User findByUserName(String userName) {
-        return null;
+    public User findByUserNameAndPassword(String userName, String password) {
+        List<User> userList = em.createNamedQuery("user.findByUsernameAndPassword", User.class).setParameter("username", userName).setParameter("password",password).getResultList();
+
+
+       if (userList.isEmpty()) {
+           return null;
+       }else {
+           return userList.get(0);
+       }
     }
+
+    @Override
+    public boolean isUserValid(String username, String password) {
+        List<User> userList = em.createNamedQuery("user.findByUsernameAndPassword", User.class).setParameter("username", username).setParameter("password",password).getResultList();
+
+        if (userList.isEmpty()) {
+            return false;
+        }else {
+            return true;
+        }
+    }
+
+
 }
