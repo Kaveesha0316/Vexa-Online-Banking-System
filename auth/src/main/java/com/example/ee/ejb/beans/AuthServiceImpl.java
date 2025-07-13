@@ -39,11 +39,21 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public boolean isUserValid(String username, String password) {
         List<User> userList = em.createNamedQuery("user.findByUsernameAndPassword", User.class).setParameter("username", username).setParameter("password",password).getResultList();
-
         if (userList.isEmpty()) {
             return false;
         }else {
             return true;
+        }
+
+    }
+
+    @Override
+    public User findUserByCustomerId(Long customerId) {
+        List<User> userList =  em.createNamedQuery("user.findByUserByCustomerId", User.class).setParameter("customerid", customerId).getResultList();
+        if (userList.isEmpty()) {
+           return null;
+        }else {
+           return userList.get(0);
         }
     }
 

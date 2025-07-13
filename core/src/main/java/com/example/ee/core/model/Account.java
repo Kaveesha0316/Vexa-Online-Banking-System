@@ -9,9 +9,11 @@ import java.util.List;
 
 @Entity
 @Table(name = "accounts")
-@NamedQueries(
-        @NamedQuery(name = "Account.getCuscount", query = "select a from Account a where a.customer.customerId =:customerId")
-)
+@NamedQueries({
+        @NamedQuery(name = "Account.getCuscount", query = "select a from Account a where a.customer.customerId =:customerId"),
+        @NamedQuery(name = "Account.findByAccountNo", query = "select a from Account a where a.accountNumber =:accountNo"),
+        @NamedQuery(name = "Account.findByCustomerId", query = "select a from Account a where a.customer.customerId =:customerId")
+})
 public class Account implements Serializable {
 
     @Id

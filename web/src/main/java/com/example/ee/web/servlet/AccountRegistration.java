@@ -1,9 +1,6 @@
 package com.example.ee.web.servlet;
 
-import com.example.ee.core.model.Account;
-import com.example.ee.core.model.AccountType;
-import com.example.ee.core.model.Customer;
-import com.example.ee.core.model.Status;
+import com.example.ee.core.model.*;
 import com.example.ee.core.service.AccountService;
 import com.example.ee.core.service.AuthService;
 import com.example.ee.core.service.CustomerService;
@@ -27,14 +24,17 @@ public class AccountRegistration extends HttpServlet {
     @EJB
     CustomerService customerService;
 
+    @EJB
+    AuthService authService;
+
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         resp.setContentType("text/plain");
 
         try {
             String nic = req.getParameter("nic");
-            String acTypeParam = req.getParameter("AccountType");
-            String balanceParam = req.getParameter("AccountBalance");
+            String acTypeParam = req.getParameter("type");
+            String balanceParam = req.getParameter("balance");
 
             if (nic == null || acTypeParam == null || balanceParam == null) {
                 resp.getWriter().write("Missing parameters");
@@ -57,12 +57,22 @@ public class AccountRegistration extends HttpServlet {
                 return;
             }
 
+            if(Double.parseDouble(balanceParam) < 1000.0){
+                resp.getWriter().write("Account Balance is less than 1000.00");
+                return;
+            }
+
             Customer customer = customerService.findCustomerByNic(nic);
             if (customer == null) {
                 resp.getWriter().write("Invalid NIC");
                 return;
+            }else {
+                User user = authService.findUserByCustomerId(customer.getCustomerId());
+                if (user.getStatus() == Status.INACTIVE) {
+                    resp.getWriter().write("This user blocked");
+                    return;
+                }
             }
-
             List<Account> accountList = accountService.checkAccountCount(customer.getCustomerId());
             int savings = 0;
             int fixed = 0;

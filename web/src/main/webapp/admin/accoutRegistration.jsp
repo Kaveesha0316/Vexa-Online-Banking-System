@@ -734,7 +734,7 @@
                     <label for="balance">balance<span>*</span></label>
                     <div class="input-with-icon">
                         <i class="fas fa-money-bill-wave"></i>
-                        <input type="tel" id="balance" placeholder="0" required>
+                        <input type="number" min="0"  id="balance" placeholder="0" required>
                     </div>
                 </div>
             </div>
@@ -744,8 +744,8 @@
                 <div class="form-group">
                     <label for="state">Account Type</label>
                     <select id="state">
-                        <option value="">Savings</option>
-                        <option value="CA">Fixed</option>
+                        <option selected value="SAVINGS">SAVINGS</option>
+                        <option value="FIXED_DEPOSIT">FIXED_DEPOSIT</option>
                     </select>
                 </div>
                 <div class="form-group">
@@ -760,7 +760,7 @@
 
             <div class="form-actions">
 
-                <button type="submit" class="btn btn-primary">
+                <button type="button" onclick="create();" class="btn btn-primary">
                     <i class="fas fa-arrow-right"></i> Complete and Submit
                 </button>
             </div>
@@ -790,6 +790,21 @@
         });
     });
 
+    // Listen for changes to Account Type
+    document.getElementById('state').addEventListener('change', function() {
+        const interestInput = document.getElementById('interest');
+        const selected = this.value;
+
+        if (selected === 'SAVINGS') {
+            interestInput.value = "3.0%";
+        } else if (selected === 'FIXED_DEPOSIT') {
+            interestInput.value = "5.0%";
+        } else {
+            interestInput.value = "";
+        }
+    });
+
+
     // Simple interactivity for demo purposes
     <%--document.querySelectorAll('.action-btn').forEach(btn => {--%>
     <%--    btn.addEventListener('click', function() {--%>
@@ -812,6 +827,81 @@
             this.classList.add('active');
         });
     });
+
+    async function create(event) {
+        // ✅ Prevent default form submission
+        if (event) event.preventDefault();
+
+        const nic = document.getElementById("nic").value.trim();
+        const balance = document.getElementById("balance").value.trim();
+        const state = document.getElementById("state").value;
+
+        // ✅ Check empty fields
+        if (!nic || !balance || !state) {
+            Swal.fire({
+                icon: "error",
+                title: "Missing Fields",
+                text: "Please fill in all fields."
+            });
+            return;
+        }
+
+        const nicPattern = /^(\d{9}[vVxX]|\d{12})$/;
+        if (!nicPattern.test(nic)) {
+            Swal.fire({
+                icon: "error",
+                title: "Invalid NIC",
+                text: "NIC must be 9 digits + V/X or 12 digits."
+            });
+            return;
+        }
+
+        const formData = new URLSearchParams();
+        formData.append("nic", nic);
+        formData.append("balance", balance);
+        formData.append("type", state);
+
+
+        try {
+            const response = await fetch("/banking-system/account_register", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/x-www-form-urlencoded"
+                },
+                body: formData.toString()
+            });
+
+            const responseText = await response.text();
+            if (responseText.trim() === "success") {
+                Swal.fire({
+                    title: 'Success!',
+                    text: 'The account has been registered successfully.',
+                    icon: 'success',
+                    confirmButtonText: 'OK'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        // Reload the page
+                        location.reload();
+                    }
+                });
+            }else {
+                Swal.fire({
+                    icon: "error",
+                    title: responseText.trim(),
+                    text: "Something went wrong. Please try again."
+                });
+            }
+        } catch (err) {
+            console.error("Error:", err);
+            Swal.fire({
+                icon: "error",
+                title: "Network Error",
+                text: "Unable to connect to server."
+            });
+        }
+    }
 </script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
 </body>
 </html>

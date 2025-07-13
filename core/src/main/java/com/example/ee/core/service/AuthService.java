@@ -10,5 +10,6 @@ public interface AuthService {
     void update(User user);
     User findByUserNameAndPassword(String userName, String password);
     boolean isUserValid(String username, String password);
+    User findUserByCustomerId(Long customerId);
 
 }

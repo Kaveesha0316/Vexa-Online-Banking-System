@@ -10,4 +10,9 @@ public interface AccountService {
 
     void createAccount(Account account);
     List<Account> checkAccountCount(Long customerId);
+    void  debitAccount(Long accountId, Double balance);
+    void  creditAccount(Long accountId, Double balance);
+    Account findAccountByAccountNumber(String accountNumber);
+    Account findAccountByCustomerId(Long customerId);
+
 }

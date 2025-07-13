@@ -1,5 +1,9 @@
-
+<%@ page import="javax.naming.InitialContext" %>
+<%@ page import="com.example.ee.core.service.AccountService" %>
+<%@ page import="com.example.ee.core.model.Account" %>
+<%@ page import="com.example.ee.core.model.Customer" %>
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -744,14 +748,30 @@
         </div>
     </div>
 
+    <%
+    try {
+
+        InitialContext ic = new InitialContext();
+        AccountService accountService = (AccountService) ic.lookup("com.example.ee.core.service.AccountService");
+
+        Customer customer = (Customer) request.getSession().getAttribute("customer");
+
+        Account account = accountService.findAccountByCustomerId(customer.getCustomerId());
+
+        pageContext.setAttribute("account",account);
+
+    } catch (Exception e) {
+        throw new RuntimeException(e);
+    }
+    %>
+
     <div class="card transaction-form-card">
         <form class="transaction-form">
             <div class="form-group">
                 <label for="fromAccount">From Account</label>
                 <select id="fromAccount" name="fromAccount">
-                    <option value="">-- Select Account --</option>
-                    <option value="ACC123456">Savings - ACC123456</option>
-                    <option value="ACC654321">Checking - ACC654321</option>
+                    <option value="${account.accountNumber}">Savings - ${account.accountNumber}</option>
+<%--                    <option value="ACC654321">Checking - ACC654321</option>--%>
                 </select>
             </div>
             <div class="form-group">
@@ -760,13 +780,13 @@
             </div>
             <div class="form-group">
                 <label for="amount">Amount</label>
-                <input type="number" id="amount" name="amount" placeholder="Enter amount">
+                <input type="number" id="amount" min="0" name="amount" placeholder="Enter amount">
             </div>
             <div class="form-group">
                 <label for="description">Description</label>
                 <textarea id="description" name="description" rows="3" placeholder="Enter transaction description"></textarea>
             </div>
-            <button type="submit" class="btn-submit">
+            <button type="button" onclick="transfer()" class="btn-submit">
                 <i class="fas fa-paper-plane"></i> Submit Transfer
             </button>
         </form>
@@ -812,6 +832,82 @@
             this.classList.add('active');
         });
     });
+
+    async function transfer(event) {
+
+        if (event) event.preventDefault();
+
+        const from = document.getElementById("fromAccount").value;
+        const to = document.getElementById("toAccount").value.trim();
+        const amount = document.getElementById("amount").value.trim();
+        const desc = document.getElementById("description").value.trim();
+
+
+
+        if (!from || !to || !amount || !desc) {
+            Swal.fire({
+                icon: "error",
+                title: "Missing Fields",
+                text: "Please fill in all fields."
+            });
+            return;
+        }
+
+        if (amount <= 0) {
+            Swal.fire({
+                icon: "error",
+                title: "Amount must be greater than 0",
+                text: "Please enter an amount greater than 0"
+            });
+            return;
+        }
+
+        const formData = new URLSearchParams();
+        formData.append("from", from);
+        formData.append("to", to);
+        formData.append("amount", amount);
+        formData.append("desc", desc);
+
+        try {
+            const response = await fetch("/banking-system/make_transaction", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/x-www-form-urlencoded"
+                },
+                body: formData.toString()
+            });
+
+            const responseText = await response.text();
+            if (responseText.trim() === "success") {
+                Swal.fire({
+                    title: 'Success!',
+                    text: 'The account has been registered successfully.',
+                    icon: 'success',
+                    confirmButtonText: 'OK'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        // Reload the page
+                        location.reload();
+                    }
+                });
+            }else {
+                Swal.fire({
+                    icon: "error",
+                    title: responseText.trim(),
+                    text: "Something went wrong. Please try again."
+                });
+            }
+        } catch (err) {
+            console.error("Error:", err);
+            Swal.fire({
+                icon: "error",
+                title: "Network Error",
+                text: "Unable to connect to server."
+            });
+        }
+    }
+
 </script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </body>
 </html>

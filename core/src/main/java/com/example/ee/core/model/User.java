@@ -8,7 +8,8 @@ import java.time.LocalDateTime;
 @Entity
 @Table(name = "users")
 @NamedQueries({
-        @NamedQuery(name = "user.findByUsernameAndPassword", query = "select u from User u where u.username=:username AND u.passwordHash=:password")
+        @NamedQuery(name = "user.findByUsernameAndPassword", query = "select u from User u where u.username=:username AND u.passwordHash=:password"),
+        @NamedQuery(name = "user.findByUserByCustomerId", query = "select u from User u where u.customer.customerId=:customerid")
 })
 public class User implements Serializable {
     @Id
