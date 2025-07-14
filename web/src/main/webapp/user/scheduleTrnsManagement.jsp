@@ -1,4 +1,14 @@
-
+<%@ page import="com.example.ee.core.model.Account" %>
+<%@ page import="javax.naming.InitialContext" %>
+<%@ page import="com.example.ee.core.service.AccountService" %>
+<%@ page import="com.example.ee.core.service.TransactionService" %>
+<%@ page import="com.example.ee.core.model.Customer" %>
+<%@ page import="com.example.ee.core.model.Transaction" %>
+<%@ page import="java.util.List" %>
+<%@ page import="com.example.ee.core.service.ScheduledTransferService" %>
+<%@ page import="com.example.ee.core.model.ScheduledTransfer" %>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="fmt" uri="jakarta.tags.fmt" %>
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <!DOCTYPE html>
 <html lang="en">
@@ -669,7 +679,32 @@
         </li>
     </ul>
 </aside>
+<%
+    Account savingaccount;
 
+    try {
+
+        InitialContext ic = new InitialContext();
+        AccountService accountService = (AccountService) ic.lookup("com.example.ee.core.service.AccountService");
+        ScheduledTransferService scheduledTransferService = (ScheduledTransferService) ic.lookup("java:global/banking-system-ear/transaction-module/ScheduledTransferServiceImpl!com.example.ee.core.service.ScheduledTransferService");
+
+        Customer customer = (Customer) request.getSession().getAttribute("customer");
+
+        savingaccount = accountService.findAccountByCustomerId(customer.getCustomerId());
+
+        List<ScheduledTransfer> scheduledTransferList = scheduledTransferService.getScheduledTransfersBYAccountId(savingaccount.getAccountId());
+
+
+//        pageContext.setAttribute("savingaccount", savingaccount);
+//        pageContext.setAttribute("customer", customer);
+        pageContext.setAttribute("scheduledTransferList",scheduledTransferList);
+        System.out.println(scheduledTransferList);
+
+
+    } catch (Exception e) {
+        throw new RuntimeException(e);
+    }
+%>
 <!-- Main Content -->
 <main class="main-content">
     <!-- Top Bar -->
@@ -703,59 +738,54 @@
                     <th>From Account</th>
                     <th>To Account</th>
                     <th>Amount</th>
-                    <th>Frequency</th>
-                    <th>Next Date</th>
+                    <th>Scheduled Date</th>
                     <th>Created On</th>
                     <th>Status</th>
-                    <th>Action</th>
+
                 </tr>
                 </thead>
                 <tbody>
                 <!-- Example rows -->
+            <c:forEach var="scheduledTransfer" items="${scheduledTransferList}">
                 <tr>
-                    <td>****1234</td>
-                    <td>****5678</td>
-                    <td><span class="transaction-amount positive">$500.00</span></td>
-                    <td>Monthly</td>
-                    <td>2025-08-01</td>
-                    <td>2025-05-15</td>
-                    <td><span class="transaction-status status-completed">Active</span></td>
-                    <td>
-                        <button style="
-                            background: var(--danger);
-                            color: white;
-                            border: none;
-                            padding: 6px 12px;
-                            border-radius: 6px;
-                            font-size: 12px;
-                            cursor: pointer;
-                        " onclick="alert('Schedule stopped')">
-                            Stop
-                        </button>
-                    </td>
+                    <td>******${scheduledTransfer.fromAccount.accountNumber.substring(6)}</td>
+                    <td>******${scheduledTransfer.toAccount.accountNumber.substring(6)}</td>
+                    <td><span class="transaction-amount negative">-Rs.${scheduledTransfer.amount}0</span></td>
+                    <td><fmt:formatDate value="${scheduledTransfer.scheduledDateTime}" pattern="yyyy-MM-dd hh:mm:ss a" /></td>
+                    <td><fmt:formatDate value="${scheduledTransfer.createdAt}" pattern="yyyy-MM-dd hh:mm:ss a" /></td>
+                    <c:choose>
+                        <c:when test="${scheduledTransfer.scheduleSts.toString() == 'SUCCEEDED'}">
+                            <td><span class="transaction-status status-completed">SUCCEEDED</span></td>
+                        </c:when>
+                        <c:otherwise>
+                            <td><span class="transaction-status status-pending">PENDING</span></td>
+                        </c:otherwise>
+                    </c:choose>
+
                 </tr>
-                <tr>
-                    <td>****9876</td>
-                    <td>****5432</td>
-                    <td><span class="transaction-amount positive">$200.00</span></td>
-                    <td>Weekly</td>
-                    <td>2025-07-10</td>
-                    <td>2025-06-01</td>
-                    <td><span class="transaction-status status-pending">Pending</span></td>
-                    <td>
-                        <button style="
-                            background: var(--danger);
-                            color: white;
-                            border: none;
-                            padding: 6px 12px;
-                            border-radius: 6px;
-                            font-size: 12px;
-                            cursor: pointer;
-                        " onclick="alert('Schedule stopped')">
-                            Stop
-                        </button>
-                    </td>
-                </tr>
+            </c:forEach>
+<%--                <tr>--%>
+<%--                    <td>****9876</td>--%>
+<%--                    <td>****5432</td>--%>
+<%--                    <td><span class="transaction-amount positive">$200.00</span></td>--%>
+<%--                    <td>Weekly</td>--%>
+<%--                    <td>2025-07-10</td>--%>
+<%--                    <td>2025-06-01</td>--%>
+<%--                    <td><span class="transaction-status status-pending">Pending</span></td>--%>
+<%--                    <td>--%>
+<%--                        <button style="--%>
+<%--                            background: var(--danger);--%>
+<%--                            color: white;--%>
+<%--                            border: none;--%>
+<%--                            padding: 6px 12px;--%>
+<%--                            border-radius: 6px;--%>
+<%--                            font-size: 12px;--%>
+<%--                            cursor: pointer;--%>
+<%--                        " onclick="alert('Schedule stopped')">--%>
+<%--                            Stop--%>
+<%--                        </button>--%>
+<%--                    </td>--%>
+<%--                </tr>--%>
                 <!-- Add more rows dynamically -->
                 </tbody>
             </table>

@@ -4,45 +4,48 @@ import jakarta.persistence.*;
 
 import java.io.Serializable;
 import java.time.LocalDate;
+import java.util.Date;
 
 @Entity
 @Table(name = "scheduled_transfers")
+@NamedQueries({
+        @NamedQuery(name = "ScheduledTransfer.FindHistory", query = "select s from ScheduledTransfer s where s.fromAccount.accountId=:AccId order by s.createdAt DESC")
+})
 public class ScheduledTransfer implements Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long scheduleId;
 
-    @ManyToOne
+    @ManyToOne(optional = false)
     @JoinColumn(name = "from_account_id")
     private Account fromAccount;
 
-    @ManyToOne
+    @ManyToOne(optional = false)
     @JoinColumn(name = "to_account_id")
     private Account toAccount;
 
+    @Column(nullable = false)
     private Double amount;
 
     @Enumerated(EnumType.STRING)
-    private Frequency frequency; // OneTime, Daily, Weekly, Monthly
+    private ScheduleSts scheduleSts;
 
-    private LocalDate nextExecutionDate;
+    @Column(nullable = false)
+    private Date scheduledDateTime;
 
-    @Enumerated(EnumType.STRING)
-    private Status status;
+    private Date createdAt;
 
-    private LocalDate createdAt;
 
     public ScheduledTransfer() {
     }
 
-    public ScheduledTransfer(Account fromAccount, Account toAccount, Double amount, Frequency frequency, LocalDate nextExecutionDate, Status status, LocalDate createdAt) {
+    public ScheduledTransfer(Account fromAccount, Account toAccount, Double amount, ScheduleSts scheduleSts, Date scheduledDateTime, Date createdAt) {
         this.fromAccount = fromAccount;
         this.toAccount = toAccount;
         this.amount = amount;
-        this.frequency = frequency;
-        this.nextExecutionDate = nextExecutionDate;
-        this.status = status;
+        this.scheduleSts = scheduleSts;
+        this.scheduledDateTime = scheduledDateTime;
         this.createdAt = createdAt;
     }
 
@@ -78,35 +81,27 @@ public class ScheduledTransfer implements Serializable {
         this.amount = amount;
     }
 
-    public Frequency getFrequency() {
-        return frequency;
+    public ScheduleSts getScheduleSts() {
+        return scheduleSts;
     }
 
-    public void setFrequency(Frequency frequency) {
-        this.frequency = frequency;
+    public void setScheduleSts(ScheduleSts scheduleSts) {
+        this.scheduleSts = scheduleSts;
     }
 
-    public LocalDate getNextExecutionDate() {
-        return nextExecutionDate;
+    public Date getScheduledDateTime() {
+        return scheduledDateTime;
     }
 
-    public void setNextExecutionDate(LocalDate nextExecutionDate) {
-        this.nextExecutionDate = nextExecutionDate;
+    public void setScheduledDateTime(Date scheduledDateTime) {
+        this.scheduledDateTime = scheduledDateTime;
     }
 
-    public Status getStatus() {
-        return status;
-    }
-
-    public void setStatus(Status status) {
-        this.status = status;
-    }
-
-    public LocalDate getCreatedAt() {
+    public Date getCreatedAt() {
         return createdAt;
     }
 
-    public void setCreatedAt(LocalDate createdAt) {
+    public void setCreatedAt(Date createdAt) {
         this.createdAt = createdAt;
     }
 }

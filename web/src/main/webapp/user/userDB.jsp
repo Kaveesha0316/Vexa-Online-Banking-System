@@ -1,6 +1,15 @@
-
-<%@ page contentType="text/html;charset=UTF-8" language="java" %>
-<!DOCTYPE html>
+        <%@ page import="javax.naming.InitialContext" %>
+<%@ page import="com.example.ee.core.service.AccountService" %>
+<%@ page import="com.example.ee.core.model.Customer" %>
+<%@ page import="com.example.ee.core.model.Account" %>
+        <%@ page import="com.example.ee.core.service.TransactionService" %>
+        <%@ page import="java.util.List" %>
+        <%@ page import="com.example.ee.core.model.Transaction" %>
+        <%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+        <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
+        <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
+        <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -670,13 +679,41 @@
     </ul>
 </aside>
 
+<%
+    Account savingaccount;
+    Account fixedaccount;
+    try {
+
+        InitialContext ic = new InitialContext();
+        AccountService accountService = (AccountService) ic.lookup("com.example.ee.core.service.AccountService");
+        TransactionService transactionService = (TransactionService) ic.lookup("com.example.ee.core.service.TransactionService");
+
+        Customer customer = (Customer) request.getSession().getAttribute("customer");
+
+        savingaccount = accountService.findAccountByCustomerId(customer.getCustomerId());
+        fixedaccount = accountService.findFixedAccountByCustomerId(customer.getCustomerId());
+
+        List<Transaction> transactionList = transactionService.findlast5TransactionByFromAc(savingaccount.getAccountId());
+
+        pageContext.setAttribute("savingaccount", savingaccount);
+        pageContext.setAttribute("fixedaccount", fixedaccount);
+        pageContext.setAttribute("customer", customer);
+        pageContext.setAttribute("transList",transactionList);
+
+        System.out.println(transactionList);
+
+    } catch (Exception e) {
+        throw new RuntimeException(e);
+    }
+%>
+
 <!-- Main Content -->
 <main class="main-content">
     <!-- Top Bar -->
     <div class="top-bar">
         <div class="page-title">
             <h2>Dashboard</h2>
-            <p>Welcome back, Robert! Here's your financial summary.</p>
+            <p>Welcome back, ${customer.firstName}! Here's your financial summary.</p>
         </div>
         <div class="user-actions">
             <div class="notification">
@@ -684,9 +721,9 @@
                 <span class="notification-badge">3</span>
             </div>
             <div class="user-profile">
-                <div class="avatar">RJ</div>
+                <div class="avatar"> ${fn:toUpperCase(fn:substring(customer.firstName,0,1))}${fn:toUpperCase(fn:substring(customer.lastName,0,1))}</div>
                 <div class="user-info">
-                    <h4>Robert Johnson</h4>
+                    <h4>${customer.firstName} ${customer.lastName}</h4>
                     <p>Premium Member</p>
                 </div>
                 <i class="fas fa-chevron-down"></i>
@@ -701,44 +738,49 @@
             <!-- Account Summary -->
             <div class="account-summary">
                 <div class="account-card">
-                    <div class="account-type">Primary Account</div>
-                    <div class="account-number">**** **** **** 4512</div>
-                    <div class="account-balance">$12,560.80</div>
+                    <div class="account-type">Saving Account</div>
+                    <div class="account-number">****** ${savingaccount.accountNumber.substring(6)}</div>
+                    <div class="account-balance">Rs.${savingaccount.balance}</div>
                     <div class="account-details">
-                        <span>Checking</span>
-                        <span>NexusBank</span>
+                        <span>${savingaccount.interestRate}0%</span>
+                        <span>Vexa Bank</span>
                     </div>
                 </div>
+                <% if (fixedaccount != null) {
+                    %>
                 <div class="account-card" style="background: linear-gradient(135deg, #0f172a 0%, #334155 100%);">
-                    <div class="account-type">Savings Account</div>
-                    <div class="account-number">**** **** **** 7821</div>
-                    <div class="account-balance">$8,430.25</div>
+                    <div class="account-type">Fixed Account</div>
+                    <div class="account-number">****** ${fixedaccount.accountNumber.substring(6)}</div>
+                    <div class="account-balance">Rs.${fixedaccount.balance}</div>
                     <div class="account-details">
-                        <span>1.5% APY</span>
-                        <span>NexusBank</span>
+                        <span>${fixedaccount.interestRate}.0%</span>
+                        <span>Vexa Bank</span>
                     </div>
                 </div>
+                <%
+                }%>
+
             </div>
 
             <!-- Quick Actions -->
-            <div class="quick-actions">
-                <div class="action-btn">
-                    <i class="fas fa-paper-plane"></i>
-                    <h4>Send Money</h4>
-                </div>
-                <div class="action-btn">
-                    <i class="fas fa-exchange-alt"></i>
-                    <h4>Transfer</h4>
-                </div>
-                <div class="action-btn">
-                    <i class="fas fa-mobile-alt"></i>
-                    <h4>Pay Bills</h4>
-                </div>
-                <div class="action-btn">
-                    <i class="fas fa-download"></i>
-                    <h4>Deposit</h4>
-                </div>
-            </div>
+<%--            <div class="quick-actions">--%>
+<%--                <div class="action-btn">--%>
+<%--                    <i class="fas fa-paper-plane"></i>--%>
+<%--                    <h4>Send Money</h4>--%>
+<%--                </div>--%>
+<%--                <div class="action-btn">--%>
+<%--                    <i class="fas fa-exchange-alt"></i>--%>
+<%--                    <h4>Transfer</h4>--%>
+<%--                </div>--%>
+<%--                <div class="action-btn">--%>
+<%--                    <i class="fas fa-mobile-alt"></i>--%>
+<%--                    <h4>Pay Bills</h4>--%>
+<%--                </div>--%>
+<%--                <div class="action-btn">--%>
+<%--                    <i class="fas fa-download"></i>--%>
+<%--                    <h4>Deposit</h4>--%>
+<%--                </div>--%>
+<%--            </div>--%>
 
             <!-- Recent Transactions -->
             <div class="card">
@@ -757,86 +799,91 @@
                         </tr>
                         </thead>
                         <tbody>
+                        <c:forEach var="transaction" items="${transList}">
                         <tr>
                             <td>
                                 <div class="transaction-detail">
-                                    <div class="transaction-icon icon-expense">
-                                        <i class="fas fa-shopping-bag"></i>
-                                    </div>
                                     <div class="transaction-info">
-                                        <h4>Amazon Online</h4>
-                                        <p>Shopping</p>
+                                        <h4>${transaction.description}</h4>
                                     </div>
                                 </div>
                             </td>
-                            <td>Jul 5, 2023</td>
-                            <td class="transaction-amount negative">-$85.30</td>
+                            <td><fmt:formatDate value="${transaction.createdAt}" pattern="MMM d, yyyy" /></td>
+                            <c:choose>
+                                <c:when test="${transaction.fromAccount.accountId == savingaccount.accountId}">
+                                    <td class="transaction-amount negative">-Rs.${transaction.amount}</td>
+                                </c:when>
+                                <c:otherwise>
+                                    <td class="transaction-amount positive">+Rs.${transaction.amount}</td>
+                                </c:otherwise>
+                            </c:choose>
                             <td><span class="transaction-status status-completed">Completed</span></td>
                         </tr>
-                        <tr>
-                            <td>
-                                <div class="transaction-detail">
-                                    <div class="transaction-icon icon-income">
-                                        <i class="fas fa-briefcase"></i>
-                                    </div>
-                                    <div class="transaction-info">
-                                        <h4>Salary Deposit</h4>
-                                        <p>Income</p>
-                                    </div>
-                                </div>
-                            </td>
-                            <td>Jul 3, 2023</td>
-                            <td class="transaction-amount positive">+$3,200.00</td>
-                            <td><span class="transaction-status status-completed">Completed</span></td>
-                        </tr>
-                        <tr>
-                            <td>
-                                <div class="transaction-detail">
-                                    <div class="transaction-icon icon-transfer">
-                                        <i class="fas fa-exchange-alt"></i>
-                                    </div>
-                                    <div class="transaction-info">
-                                        <h4>To Savings Account</h4>
-                                        <p>Transfer</p>
-                                    </div>
-                                </div>
-                            </td>
-                            <td>Jul 1, 2023</td>
-                            <td class="transaction-amount negative">-$500.00</td>
-                            <td><span class="transaction-status status-completed">Completed</span></td>
-                        </tr>
-                        <tr>
-                            <td>
-                                <div class="transaction-detail">
-                                    <div class="transaction-icon icon-expense">
-                                        <i class="fas fa-utensils"></i>
-                                    </div>
-                                    <div class="transaction-info">
-                                        <h4>Restaurant Payment</h4>
-                                        <p>Dining</p>
-                                    </div>
-                                </div>
-                            </td>
-                            <td>Jun 28, 2023</td>
-                            <td class="transaction-amount negative">-$64.20</td>
-                            <td><span class="transaction-status status-completed">Completed</span></td>
-                        </tr>
-                        <tr>
-                            <td>
-                                <div class="transaction-detail">
-                                    <div class="transaction-icon icon-expense">
-                                        <i class="fas fa-lightbulb"></i>
-                                    </div>
-                                    <div class="transaction-info">
-                                        <h4>Utility Bill</h4>
-                                        <p>Electricity</p>
-                                    </div>
-                                </div>
-                            </td>
-                            <td>Jun 26, 2023</td>
-                            <td class="transaction-amount negative">-$120.50</td>
-                            <td><span class="transaction-status status-pending">Pending</span></td>
-                        </tr>
+                        </c:forEach>
+<%--                        <tr>--%>
+<%--                            <td>--%>
+<%--                                <div class="transaction-detail">--%>
+<%--                                    <div class="transaction-icon icon-income">--%>
+<%--                                        <i class="fas fa-briefcase"></i>--%>
+<%--                                    </div>--%>
+<%--                                    <div class="transaction-info">--%>
+<%--                                        <h4>Salary Deposit</h4>--%>
+<%--                                        <p>Income</p>--%>
+<%--                                    </div>--%>
+<%--                                </div>--%>
+<%--                            </td>--%>
+<%--                            <td>Jul 3, 2023</td>--%>
+<%--                            <td class="transaction-amount positive">+$3,200.00</td>--%>
+<%--                            <td><span class="transaction-status status-completed">Completed</span></td>--%>
+<%--                        </tr>--%>
+<%--                        <tr>--%>
+<%--                            <td>--%>
+<%--                                <div class="transaction-detail">--%>
+<%--                                    <div class="transaction-icon icon-transfer">--%>
+<%--                                        <i class="fas fa-exchange-alt"></i>--%>
+<%--                                    </div>--%>
+<%--                                    <div class="transaction-info">--%>
+<%--                                        <h4>To Savings Account</h4>--%>
+<%--                                        <p>Transfer</p>--%>
+<%--                                    </div>--%>
+<%--                                </div>--%>
+<%--                            </td>--%>
+<%--                            <td>Jul 1, 2023</td>--%>
+<%--                            <td class="transaction-amount negative">-$500.00</td>--%>
+<%--                            <td><span class="transaction-status status-completed">Completed</span></td>--%>
+<%--                        </tr>--%>
+<%--                        <tr>--%>
+<%--                            <td>--%>
+<%--                                <div class="transaction-detail">--%>
+<%--                                    <div class="transaction-icon icon-expense">--%>
+<%--                                        <i class="fas fa-utensils"></i>--%>
+<%--                                    </div>--%>
+<%--                                    <div class="transaction-info">--%>
+<%--                                        <h4>Restaurant Payment</h4>--%>
+<%--                                        <p>Dining</p>--%>
+<%--                                    </div>--%>
+<%--                                </div>--%>
+<%--                            </td>--%>
+<%--                            <td>Jun 28, 2023</td>--%>
+<%--                            <td class="transaction-amount negative">-$64.20</td>--%>
+<%--                            <td><span class="transaction-status status-completed">Completed</span></td>--%>
+<%--                        </tr>--%>
+<%--                        <tr>--%>
+<%--                            <td>--%>
+<%--                                <div class="transaction-detail">--%>
+<%--                                    <div class="transaction-icon icon-expense">--%>
+<%--                                        <i class="fas fa-lightbulb"></i>--%>
+<%--                                    </div>--%>
+<%--                                    <div class="transaction-info">--%>
+<%--                                        <h4>Utility Bill</h4>--%>
+<%--                                        <p>Electricity</p>--%>
+<%--                                    </div>--%>
+<%--                                </div>--%>
+<%--                            </td>--%>
+<%--                            <td>Jun 26, 2023</td>--%>
+<%--                            <td class="transaction-amount negative">-$120.50</td>--%>
+<%--                            <td><span class="transaction-status status-pending">Pending</span></td>--%>
+<%--                        </tr>--%>
                         </tbody>
                     </table>
                 </div>
@@ -865,17 +912,7 @@
                         <p>Monthly Expenses</p>
                     </div>
                 </div>
-                <div class="stat-card">
-                    <div class="stat-icon icon-3">
-                        <i class="fas fa-piggy-bank"></i>
-                    </div>
-                    <div class="stat-info">
-                        <h3>$500.00</h3>
-                        <p>Monthly Savings</p>
-                    </div>
-                </div>
             </div>
-
             <!-- Spending Chart -->
             <div class="card">
                 <div class="card-header">

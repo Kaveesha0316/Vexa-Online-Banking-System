@@ -91,4 +91,26 @@ public class AccountServiceImpl implements AccountService {
        }
     }
 
+    @Override
+    public Account findFixedAccountByCustomerId(Long customerId) {
+        List<Account> accountList = em.createNamedQuery("Account.findByCustomerId", Account.class).setParameter("customerId", customerId).getResultList();
+
+        if (accountList.isEmpty()) {
+            return null;
+        }else {
+            for (Account account : accountList) {
+                if (account.getAccountType() == AccountType.FIXED_DEPOSIT){
+                    return account;
+                }
+            }
+            return null;
+        }
+    }
+
+    @Override
+    public double findMonthlyIncomeByCustomerId(Long customerId) {
+
+        return 0;
+    }
+
 }

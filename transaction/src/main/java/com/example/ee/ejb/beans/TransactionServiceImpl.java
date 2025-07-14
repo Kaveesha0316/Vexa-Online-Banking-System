@@ -10,6 +10,8 @@ import jakarta.ejb.TransactionAttributeType;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 
+import java.util.List;
+
 @Stateless
 public class TransactionServiceImpl implements TransactionService {
 
@@ -22,9 +24,18 @@ public class TransactionServiceImpl implements TransactionService {
     @EJB
     TransactionService transactionService;
 
+
     @Override
     public void saveTransaction(Transaction transaction) {
         em.persist(transaction);
+    }
+
+    @Override
+    public List<Transaction> findlast5TransactionByFromAc(Long fromAccountId) {
+
+       List<Transaction> transactionList = em.createNamedQuery("Transaction.findLast5TrnsByCusId", Transaction.class).setParameter("accNo", fromAccountId).setParameter("accNo2", fromAccountId).setMaxResults(5).getResultList();
+
+        return transactionList;
     }
 
 }

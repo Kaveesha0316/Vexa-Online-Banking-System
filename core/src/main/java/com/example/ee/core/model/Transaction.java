@@ -4,9 +4,13 @@ import jakarta.persistence.*;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
+import java.util.Date;
 
 @Entity
 @Table(name = "transactions")
+@NamedQueries({
+        @NamedQuery(name = "Transaction.findLast5TrnsByCusId",query = "SELECT t FROM Transaction t where t.fromAccount.accountId=:accNo or t.todAccount.accountId=:accNo2 order by t.createdAt DESC")
+})
 public class Transaction implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -27,12 +31,12 @@ public class Transaction implements Serializable {
 
     private String description;
 
-    private LocalDateTime createdAt;
+    private Date createdAt;
 
     public Transaction() {
     }
 
-    public Transaction(Account fromAccount, Account todAccount, TransactionType transactionType, Double amount, String description, LocalDateTime createdAt) {
+    public Transaction(Account fromAccount, Account todAccount, TransactionType transactionType, Double amount, String description, Date createdAt) {
         this.fromAccount = fromAccount;
         this.todAccount = todAccount;
         this.transactionType = transactionType;
@@ -89,11 +93,11 @@ public class Transaction implements Serializable {
         this.description = description;
     }
 
-    public LocalDateTime getCreatedAt() {
+    public Date getCreatedAt() {
         return createdAt;
     }
 
-    public void setCreatedAt(LocalDateTime createdAt) {
+    public void setCreatedAt(Date createdAt) {
         this.createdAt = createdAt;
     }
 }

@@ -15,6 +15,7 @@ import jakarta.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
+import java.util.Date;
 
 @WebServlet("/make_transaction")
 public class makeTransaction extends HttpServlet {
@@ -57,7 +58,7 @@ public class makeTransaction extends HttpServlet {
                         TransactionType.WITHDRAWAL,
                         Double.parseDouble(amount),
                         description,
-                        LocalDateTime.now()
+                        new Date()
                 );
 
                 transactionOrchestratorService.makeTransaction(

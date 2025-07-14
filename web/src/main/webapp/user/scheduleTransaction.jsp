@@ -1,5 +1,9 @@
-
+<%@ page import="javax.naming.InitialContext" %>
+<%@ page import="com.example.ee.core.service.AccountService" %>
+<%@ page import="com.example.ee.core.model.Customer" %>
+<%@ page import="com.example.ee.core.model.Account" %>
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -743,6 +747,22 @@
             <p>Set up a recurring transfer between accounts</p>
         </div>
     </div>
+    <%
+        try {
+
+            InitialContext ic = new InitialContext();
+            AccountService accountService = (AccountService) ic.lookup("com.example.ee.core.service.AccountService");
+
+            Customer customer = (Customer) request.getSession().getAttribute("customer");
+
+            Account account = accountService.findAccountByCustomerId(customer.getCustomerId());
+
+            pageContext.setAttribute("account",account);
+
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    %>
 
     <div class="card transaction-form-card">
         <form class="transaction-form">
@@ -751,9 +771,7 @@
                 <label for="fromAccount" style="display:block; font-weight:500; margin-bottom:6px;">From Account</label>
                 <select id="fromAccount" name="fromAccount" required
                         style="width:100%; padding:12px; border:1px solid var(--border); border-radius:8px; font-size:15px;">
-                    <option value="">Select account</option>
-                    <option value="ACC001">Savings - ACC001</option>
-                    <option value="ACC002">Checking - ACC002</option>
+                    <option value="${account.accountNumber}">Savings - ${account.accountNumber}</option>
                 </select>
             </div>
             <!-- To Account -->
@@ -770,19 +788,20 @@
                        placeholder="Enter amount"
                        style="width:100%; padding:12px; border:1px solid var(--border); border-radius:8px; font-size:15px;">
             </div>
-            <!-- Frequency -->
-            <div style="margin-bottom:24px;">
-                <label for="frequency" style="display:block; font-weight:500; margin-bottom:6px;">Frequency</label>
-                <select id="frequency" name="frequency" required
-                        style="width:100%; padding:12px; border:1px solid var(--border); border-radius:8px; font-size:15px;">
-                    <option value="">Select frequency</option>
-                    <option value="Daily">Daily</option>
-                    <option value="Weekly">Weekly</option>
-                    <option value="Monthly">Monthly</option>
-                </select>
+            <!-- schedule date -->
+            <div style="margin-bottom:20px;">
+                <label for="scheduleDate" style="display:block; font-weight:500; margin-bottom:6px;">Schedule Date</label>
+                <input type="datetime-local" id="scheduleDate" name="scheduleDate" required
+                       placeholder="Select date"
+                       style="width:100%; padding:12px; border:1px solid var(--border); border-radius:8px; font-size:15px;">
+            </div>
+            <div style="margin-bottom:20px;">
+                <label for="description" style="display:block; font-weight:500; margin-bottom:6px;">Description</label>
+                <textarea  style="width:100%; padding:12px; border:1px solid var(--border); border-radius:8px; font-size:15px;"
+                           id="description" name="description" rows="3" placeholder="Enter transaction description"></textarea>
             </div>
             <!-- Submit Button -->
-            <button type="submit"
+            <button type="button" onclick="transfer()"
                     style="width:100%; background:var(--primary); color:white; padding:14px; border:none; border-radius:8px; font-size:16px; font-weight:500; cursor:pointer; transition:background 0.3s;">
                 Schedule Transfer
             </button>
@@ -829,6 +848,97 @@
             this.classList.add('active');
         });
     });
+
+    async function transfer(event) {
+
+        if (event) event.preventDefault();
+
+        const from = document.getElementById("fromAccount").value;
+        const to = document.getElementById("toAccount").value.trim();
+        const amount = document.getElementById("amount").value.trim();
+        const desc = document.getElementById("description").value.trim();
+        const scheduleDate = document.getElementById("scheduleDate").value.trim();
+
+
+
+        if (!from || !to || !amount || !desc || !scheduleDate) {
+            Swal.fire({
+                icon: "error",
+                title: "Missing Fields",
+                text: "Please fill in all fields."
+            });
+            return;
+        }
+
+        if (amount <= 0) {
+            Swal.fire({
+                icon: "error",
+                title: "Amount must be greater than 0",
+                text: "Please enter an amount greater than 0"
+            });
+            return;
+        }
+
+
+        const scheduled = new Date(scheduleDate);
+        const now = new Date();
+
+// Validate that scheduled time is in the future
+        if (scheduled <= now) {
+            Swal.fire({
+                icon: "error",
+                title: "Invalid Schedule Time",
+                text: "Schedule date and time must be in the future."
+            });
+            return;
+        }
+
+        const formData = new URLSearchParams();
+        formData.append("from", from);
+        formData.append("to", to);
+        formData.append("amount", amount);
+        formData.append("desc", desc);
+        formData.append("scheduleDate", scheduleDate);
+
+        try {
+            const response = await fetch("/banking-system/schedule_transaction", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/x-www-form-urlencoded"
+                },
+                body: formData.toString()
+            });
+
+            const responseText = await response.text();
+            if (responseText.trim() === "success") {
+                Swal.fire({
+                    title: 'Success!',
+                    text: 'Transaction was successfully scheduled!',
+                    icon: 'success',
+                    confirmButtonText: 'OK'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        // Reload the page
+                        location.reload();
+                    }
+                });
+            }else {
+                Swal.fire({
+                    icon: "error",
+                    title: responseText.trim(),
+                    text: "Something went wrong. Please try again."
+                });
+            }
+        } catch (err) {
+            console.error("Error:", err);
+            Swal.fire({
+                icon: "error",
+                title: "Network Error",
+                text: "Unable to connect to server."
+            });
+        }
+    }
 </script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </body>
 </html>

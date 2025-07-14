@@ -14,5 +14,7 @@ public interface AccountService {
     void  creditAccount(Long accountId, Double balance);
     Account findAccountByAccountNumber(String accountNumber);
     Account findAccountByCustomerId(Long customerId);
+    Account findFixedAccountByCustomerId(Long customerId);
+    double findMonthlyIncomeByCustomerId(Long customerId);
 
 }
