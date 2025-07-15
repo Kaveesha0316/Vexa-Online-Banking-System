@@ -5,6 +5,8 @@
         <%@ page import="com.example.ee.core.service.TransactionService" %>
         <%@ page import="java.util.List" %>
         <%@ page import="com.example.ee.core.model.Transaction" %>
+        <%@ page import="com.example.ee.core.service.ScheduledTransferService" %>
+        <%@ page import="com.example.ee.core.model.ScheduledTransfer" %>
         <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
         <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
@@ -48,6 +50,77 @@
             display: flex;
             min-height: 100vh;
             overflow-x: hidden;
+        }
+
+        /*//////*/
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 999;
+            padding-top: 100px;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.5);
+        }
+
+        .modal-content {
+            background-color: #fff;
+            margin: auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 90%;
+            max-width: 400px;
+            border-radius: 8px;
+        }
+
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 24px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .close:hover {
+            color: #000;
+        }
+
+        .modal-content h2 {
+            margin-top: 0;
+        }
+
+        .modal-content form {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .modal-content label {
+            margin-top: 10px;
+        }
+
+        .modal-content input {
+            padding: 8px;
+            margin-top: 4px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+
+        .modal-content button {
+            margin-top: 20px;
+            padding: 10px;
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .modal-content button:hover {
+            background-color: var(--primary-dark);
         }
 
         /* Sidebar Styles */
@@ -310,13 +383,23 @@
         }
 
         .account-card {
+            display: block;
+            text-decoration: none;
+            color: white;
             background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
             border-radius: 12px;
-            padding: 20px;
-            color: white;
+            padding: 24px;
             position: relative;
             overflow: hidden;
             box-shadow: 0 8px 15px rgba(37, 99, 235, 0.2);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            text-decoration: none;
+        }
+
+        .account-card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 12px 25px rgba(0,0,0,0.1);
+            text-decoration: none;
         }
 
         .account-card::before {
@@ -328,6 +411,7 @@
             height: 150px;
             border-radius: 50%;
             background: rgba(255, 255, 255, 0.1);
+            text-decoration: none;
         }
 
         .account-card::after {
@@ -339,6 +423,7 @@
             height: 120px;
             border-radius: 50%;
             background: rgba(255, 255, 255, 0.1);
+            text-decoration: none;
         }
 
         .account-type {
@@ -642,12 +727,6 @@
                 <span>Dashboard</span>
             </a>
         </li>
-        <li>
-            <a href="accountsManagement.jsp">
-                <i class="fas fa-wallet"></i>
-                <span>My Accounts</span>
-            </a>
-        </li>
         <li class="has-submenu">
             <a href="#">
                 <i class="fas fa-exchange-alt"></i>
@@ -659,19 +738,25 @@
             </ul>
         </li>
         <li>
-            <a href="#">
+            <a href="transactionReport.jsp">
                 <i class="fas fa-file-invoice-dollar"></i>
-                <span>Statements & Reports</span>
+                <span>Saving Reports</span>
             </a>
         </li>
         <li>
-            <a href="#">
+            <a href="fixedTransactionReport.jsp">
+                <i class="fas fa-file-invoice-dollar"></i>
+                <span>Fixed Reports</span>
+            </a>
+        </li>
+        <li>
+            <a href="#" onclick="sendVerificationEmail();">
                 <i class="fas fa-cog"></i>
-                <span>Settings</span>
+                <span>Change Password</span>
             </a>
         </li>
         <li>
-            <a href="#">
+            <a  href="${pageContext.request.contextPath}/logout" >
                 <i class="fas fa-sign-out-alt"></i>
                 <span>Logout</span>
             </a>
@@ -688,17 +773,26 @@
         AccountService accountService = (AccountService) ic.lookup("com.example.ee.core.service.AccountService");
         TransactionService transactionService = (TransactionService) ic.lookup("com.example.ee.core.service.TransactionService");
 
+        ScheduledTransferService scheduledTransferService = (ScheduledTransferService) ic.lookup("java:global/banking-system-ear/transaction-module/ScheduledTransferServiceImpl!com.example.ee.core.service.ScheduledTransferService");
+
+
         Customer customer = (Customer) request.getSession().getAttribute("customer");
 
         savingaccount = accountService.findAccountByCustomerId(customer.getCustomerId());
         fixedaccount = accountService.findFixedAccountByCustomerId(customer.getCustomerId());
 
         List<Transaction> transactionList = transactionService.findlast5TransactionByFromAc(savingaccount.getAccountId());
+        List<ScheduledTransfer> scheduledTransferList = scheduledTransferService.get5ScheduledTransfersBYAccountId(savingaccount.getAccountId());
+        Double income = transactionService.findMonthlyIncome(savingaccount.getAccountId());
+        Double expense = transactionService.findMonthlyExpense(savingaccount.getAccountId());
 
         pageContext.setAttribute("savingaccount", savingaccount);
         pageContext.setAttribute("fixedaccount", fixedaccount);
         pageContext.setAttribute("customer", customer);
         pageContext.setAttribute("transList",transactionList);
+        pageContext.setAttribute("scheduledTransferList",scheduledTransferList);
+        pageContext.setAttribute("income",income);
+        pageContext.setAttribute("expense",expense);
 
         System.out.println(transactionList);
 
@@ -737,7 +831,7 @@
         <div class="left-column">
             <!-- Account Summary -->
             <div class="account-summary">
-                <div class="account-card">
+                <a href="savingAccountDetails.jsp" class="account-card">
                     <div class="account-type">Saving Account</div>
                     <div class="account-number">****** ${savingaccount.accountNumber.substring(6)}</div>
                     <div class="account-balance">Rs.${savingaccount.balance}</div>
@@ -745,22 +839,31 @@
                         <span>${savingaccount.interestRate}0%</span>
                         <span>Vexa Bank</span>
                     </div>
-                </div>
-                <% if (fixedaccount != null) {
-                    %>
-                <div class="account-card" style="background: linear-gradient(135deg, #0f172a 0%, #334155 100%);">
+                </a>
+
+                <% if (fixedaccount != null) { %>
+                <a href="fixedAccountDetails.jsp" class="account-card" style="background: linear-gradient(135deg, #0f172a 0%, #334155 100%);">
                     <div class="account-type">Fixed Account</div>
-                    <div class="account-number">****** ${fixedaccount.accountNumber.substring(6)}</div>
-                    <div class="account-balance">Rs.${fixedaccount.balance}</div>
+                    <div class="account-number">****** <%=fixedaccount.getAccountNumber().substring(6)%></div>
+                    <div class="account-balance">Rs.<%=fixedaccount.getBalance()%></div>
                     <div class="account-details">
-                        <span>${fixedaccount.interestRate}.0%</span>
+                        <span><%=fixedaccount.getInterestRate()%>0%</span>
                         <span>Vexa Bank</span>
                     </div>
-                </div>
-                <%
-                }%>
-
+                </a>
+                <% } else { %>
+                <a href="#" class="account-card" style="background: linear-gradient(135deg, #0f172a 0%, #334155 100%);">
+                    <div class="account-type">Fixed Account</div>
+                    <div class="account-number">****** (Not Available)</div>
+                    <div class="account-balance">Rs.0.00</div>
+                    <div class="account-details">
+                        <span>0.0%</span>
+                        <span>Vexa Bank</span>
+                    </div>
+                </a>
+                <% } %>
             </div>
+
 
             <!-- Quick Actions -->
 <%--            <div class="quick-actions">--%>
@@ -820,70 +923,6 @@
                             <td><span class="transaction-status status-completed">Completed</span></td>
                         </tr>
                         </c:forEach>
-<%--                        <tr>--%>
-<%--                            <td>--%>
-<%--                                <div class="transaction-detail">--%>
-<%--                                    <div class="transaction-icon icon-income">--%>
-<%--                                        <i class="fas fa-briefcase"></i>--%>
-<%--                                    </div>--%>
-<%--                                    <div class="transaction-info">--%>
-<%--                                        <h4>Salary Deposit</h4>--%>
-<%--                                        <p>Income</p>--%>
-<%--                                    </div>--%>
-<%--                                </div>--%>
-<%--                            </td>--%>
-<%--                            <td>Jul 3, 2023</td>--%>
-<%--                            <td class="transaction-amount positive">+$3,200.00</td>--%>
-<%--                            <td><span class="transaction-status status-completed">Completed</span></td>--%>
-<%--                        </tr>--%>
-<%--                        <tr>--%>
-<%--                            <td>--%>
-<%--                                <div class="transaction-detail">--%>
-<%--                                    <div class="transaction-icon icon-transfer">--%>
-<%--                                        <i class="fas fa-exchange-alt"></i>--%>
-<%--                                    </div>--%>
-<%--                                    <div class="transaction-info">--%>
-<%--                                        <h4>To Savings Account</h4>--%>
-<%--                                        <p>Transfer</p>--%>
-<%--                                    </div>--%>
-<%--                                </div>--%>
-<%--                            </td>--%>
-<%--                            <td>Jul 1, 2023</td>--%>
-<%--                            <td class="transaction-amount negative">-$500.00</td>--%>
-<%--                            <td><span class="transaction-status status-completed">Completed</span></td>--%>
-<%--                        </tr>--%>
-<%--                        <tr>--%>
-<%--                            <td>--%>
-<%--                                <div class="transaction-detail">--%>
-<%--                                    <div class="transaction-icon icon-expense">--%>
-<%--                                        <i class="fas fa-utensils"></i>--%>
-<%--                                    </div>--%>
-<%--                                    <div class="transaction-info">--%>
-<%--                                        <h4>Restaurant Payment</h4>--%>
-<%--                                        <p>Dining</p>--%>
-<%--                                    </div>--%>
-<%--                                </div>--%>
-<%--                            </td>--%>
-<%--                            <td>Jun 28, 2023</td>--%>
-<%--                            <td class="transaction-amount negative">-$64.20</td>--%>
-<%--                            <td><span class="transaction-status status-completed">Completed</span></td>--%>
-<%--                        </tr>--%>
-<%--                        <tr>--%>
-<%--                            <td>--%>
-<%--                                <div class="transaction-detail">--%>
-<%--                                    <div class="transaction-icon icon-expense">--%>
-<%--                                        <i class="fas fa-lightbulb"></i>--%>
-<%--                                    </div>--%>
-<%--                                    <div class="transaction-info">--%>
-<%--                                        <h4>Utility Bill</h4>--%>
-<%--                                        <p>Electricity</p>--%>
-<%--                                    </div>--%>
-<%--                                </div>--%>
-<%--                            </td>--%>
-<%--                            <td>Jun 26, 2023</td>--%>
-<%--                            <td class="transaction-amount negative">-$120.50</td>--%>
-<%--                            <td><span class="transaction-status status-pending">Pending</span></td>--%>
-<%--                        </tr>--%>
                         </tbody>
                     </table>
                 </div>
@@ -899,7 +938,7 @@
                         <i class="fas fa-arrow-up"></i>
                     </div>
                     <div class="stat-info">
-                        <h3>$3,200.00</h3>
+                        <h3>Rs.${income}</h3>
                         <p>Monthly Income</p>
                     </div>
                 </div>
@@ -908,114 +947,63 @@
                         <i class="fas fa-arrow-down"></i>
                     </div>
                     <div class="stat-info">
-                        <h3>$1,240.80</h3>
+                        <h3>Rs.${expense}0</h3>
                         <p>Monthly Expenses</p>
-                    </div>
-                </div>
-            </div>
-            <!-- Spending Chart -->
-            <div class="card">
-                <div class="card-header">
-                    <h3 class="card-title">Spending by Category</h3>
-                    <span class="card-action">Details</span>
-                </div>
-                <div style="padding: 20px 0;">
-                    <div class="spending-category">
-                        <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
-                            <span>Shopping</span>
-                            <span>$485.30</span>
-                        </div>
-                        <div style="height: 8px; background: #e2e8f0; border-radius: 4px; overflow: hidden;">
-                            <div style="width: 40%; height: 100%; background: var(--primary);"></div>
-                        </div>
-                    </div>
-                    <div class="spending-category" style="margin-top: 15px;">
-                        <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
-                            <span>Dining</span>
-                            <span>$320.80</span>
-                        </div>
-                        <div style="height: 8px; background: #e2e8f0; border-radius: 4px; overflow: hidden;">
-                            <div style="width: 26%; height: 100%; background: var(--warning);"></div>
-                        </div>
-                    </div>
-                    <div class="spending-category" style="margin-top: 15px;">
-                        <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
-                            <span>Utilities</span>
-                            <span>$240.50</span>
-                        </div>
-                        <div style="height: 8px; background: #e2e8f0; border-radius: 4px; overflow: hidden;">
-                            <div style="width: 20%; height: 100%; background: var(--accent);"></div>
-                        </div>
-                    </div>
-                    <div class="spending-category" style="margin-top: 15px;">
-                        <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
-                            <span>Entertainment</span>
-                            <span>$180.25</span>
-                        </div>
-                        <div style="height: 8px; background: #e2e8f0; border-radius: 4px; overflow: hidden;">
-                            <div style="width: 15%; height: 100%; background: var(--success);"></div>
-                        </div>
                     </div>
                 </div>
             </div>
 
             <!-- Upcoming Bills -->
-            <div class="card">
+            <div class="card" style="margin-top: 10px;">
                 <div class="card-header">
-                    <h3 class="card-title">Upcoming Bills</h3>
+                    <h3 class="card-title">Upcoming Schedules</h3>
                     <span class="card-action">Manage</span>
                 </div>
                 <div class="transactions">
                     <table>
                         <tbody>
-                        <tr>
-                            <td>
-                                <div class="transaction-detail">
-                                    <div class="transaction-icon" style="background: rgba(14, 165, 233, 0.1); color: var(--accent);">
-                                        <i class="fas fa-home"></i>
-                                    </div>
-                                    <div class="transaction-info">
-                                        <h4>Mortgage Payment</h4>
-                                        <p>Jul 15, 2023</p>
-                                    </div>
-                                </div>
-                            </td>
-                            <td class="transaction-amount negative">$1,250.00</td>
-                        </tr>
+        <c:forEach var="shedules" items="${scheduledTransferList}">
                         <tr>
                             <td>
                                 <div class="transaction-detail">
                                     <div class="transaction-icon" style="background: rgba(245, 158, 11, 0.1); color: var(--warning);">
-                                        <i class="fas fa-car"></i>
-                                    </div>
-                                    <div class="transaction-info">
-                                        <h4>Car Loan</h4>
-                                        <p>Jul 18, 2023</p>
-                                    </div>
-                                </div>
-                            </td>
-                            <td class="transaction-amount negative">$320.00</td>
-                        </tr>
-                        <tr>
-                            <td>
-                                <div class="transaction-detail">
-                                    <div class="transaction-icon" style="background: rgba(16, 185, 129, 0.1); color: var(--success);">
                                         <i class="fas fa-credit-card"></i>
                                     </div>
                                     <div class="transaction-info">
-                                        <h4>Credit Card</h4>
-                                        <p>Jul 22, 2023</p>
+                                        <h4>${shedules.toAccount.accountNumber}</h4>
+                                        <p><fmt:formatDate value="${shedules.createdAt}" pattern="MMM d, yyyy" /></p>
                                     </div>
                                 </div>
                             </td>
-                            <td class="transaction-amount negative">$480.50</td>
+                            <td style="margin-right: -20px" class="transaction-amount negative">-Rs.${shedules.amount}0</td>
                         </tr>
+        </c:forEach>
+
                         </tbody>
                     </table>
                 </div>
             </div>
         </div>
     </div>
+    <div id="changePasswordModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="document.getElementById('changePasswordModal').style.display='none'">&times;</span>
+            <h2>Change Password</h2>
+            <form  method="post">
+                <label for="verificationCode">Verification Code</label>
+                <input type="text" id="verificationCode" name="verificationCode" required>
+
+                <label for="oldPassword">Old Password</label>
+                <input type="password" id="oldPassword" name="oldPassword" required>
+
+                <label for="newPassword">New Password</label>
+                <input type="password" id="newPassword" name="newPassword" required>
+
+                <button type="button" onclick="changePassword()">Submit</button>
+            </form>
+        </div>
+    </div>
+
 </main>
 
 <script>
@@ -1056,6 +1044,122 @@
             this.classList.add('active');
         });
     });
+
+    function sendVerificationEmail() {
+        // Call your servlet or REST endpoint to send the email
+        fetch('/banking-system/sendVerificationCode', { method: 'POST' })
+            .then(response => {
+                if (response.ok) {
+                    // Email sent successfully, show modal
+                    Swal.fire({
+                        icon: "Verification",
+                        title: "Verification Code has been sent",
+                        text: "Please check your email",
+                    });
+                    document.getElementById('changePasswordModal').style.display = 'block';
+                } else {
+                    alert('Failed to send verification email. Please try again.');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred while sending the email.');
+            });
+    }
+
+    async function changePassword(event) {
+
+        if (event) event.preventDefault();
+
+        const verificationCode = document.getElementById("verificationCode").value;
+        const oldPassword = document.getElementById("oldPassword").value.trim();
+        const newPassword = document.getElementById("newPassword").value.trim();
+
+
+
+
+        if (!verificationCode || !oldPassword || !newPassword) {
+            Swal.fire({
+                icon: "error",
+                title: "Missing Fields",
+                text: "Please fill in all fields."
+            });
+            return;
+        }
+
+        // Strong password regex:
+        const strongPasswordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/;
+
+        if (!strongPasswordRegex.test(newPassword)) {
+            Swal.fire({
+                icon: "error",
+                title: "Weak Password",
+                html: `
+                <p>Your new password must contain:</p>
+                <ul style="text-align: left; margin-left: 1em;">
+                    <li>At least 8 characters</li>
+                    <li>At least 1 uppercase letter</li>
+                    <li>At least 1 lowercase letter</li>
+                    <li>At least 1 number</li>
+                    <li>At least 1 special character</li>
+                </ul>`
+            });
+            return;
+        }
+
+
+
+        const formData = new URLSearchParams();
+        formData.append("verificationCode", verificationCode);
+        formData.append("oldPassword", oldPassword);
+        formData.append("newPassword", newPassword);
+
+        try {
+            const response = await fetch("/banking-system/change_password", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/x-www-form-urlencoded"
+                },
+                body: formData.toString()
+            });
+
+            const responseText = await response.text();
+            if (responseText.trim() === "success") {
+                Swal.fire({
+                    title: 'Success!',
+                    text: 'Password updated successfully!',
+                    icon: 'success',
+                    confirmButtonText: 'OK'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        // Reload the page
+                        location.reload();
+                    }
+                });
+            }else {
+                Swal.fire({
+                    icon: "error",
+                    title: responseText.trim(),
+                    text: "Something went wrong. Please try again."
+                });
+            }
+        } catch (err) {
+            console.error("Error:", err);
+            Swal.fire({
+                icon: "error",
+                title: "Network Error",
+                text: "Unable to connect to server."
+            });
+        }
+    }
+
+    window.onclick = function(event) {
+        const modal = document.getElementById('changePasswordModal');
+        if (event.target === modal) {
+            modal.style.display = "none";
+        }
+    }
 </script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </body>
 </html>

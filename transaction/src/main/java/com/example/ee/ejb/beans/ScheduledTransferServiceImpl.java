@@ -7,12 +7,8 @@ import com.example.ee.core.service.TransactionOrchestratorService;
 import jakarta.annotation.Resource;
 import jakarta.ejb.*;
 import jakarta.persistence.EntityManager;
-import jakarta.persistence.LockModeType;
 import jakarta.persistence.PersistenceContext;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
 import java.util.Date;
 import java.util.List;
 
@@ -65,6 +61,12 @@ public class ScheduledTransferServiceImpl implements ScheduledTransferService {
         return scheduledTransferList;
     }
 
+    @Override
+    public List<ScheduledTransfer> get5ScheduledTransfersBYAccountId(Long accountId) {
+        List<ScheduledTransfer> scheduledTransferList = em.createNamedQuery("ScheduledTransfer.FindLast5History", ScheduledTransfer.class).setParameter("AccId", accountId).setParameter("date", new Date()).setMaxResults(5).getResultList();
+        return scheduledTransferList;
+    }
+
     private void scheduleTimer(ScheduledTransfer transfer) {
         Date executionDate = transfer.getScheduledDateTime(); // already java.util.Date
 
@@ -94,7 +96,7 @@ public class ScheduledTransferServiceImpl implements ScheduledTransferService {
                     new Transaction(
                             transfer.getFromAccount(),
                             transfer.getToAccount(),
-                            TransactionType.WITHDRAWAL,
+                            TransactionType.TRANSFER,
                             transfer.getAmount(),
                             "Scheduled Transfer",
                             new Date()

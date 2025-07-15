@@ -691,12 +691,6 @@
                 <span>Dashboard</span>
             </a>
         </li>
-        <li>
-            <a href="accountsManagement.jsp" class="active">
-                <i class="fas fa-wallet"></i>
-                <span>My Accounts</span>
-            </a>
-        </li>
         <li class="has-submenu">
             <a href="#">
                 <i class="fas fa-exchange-alt"></i>
@@ -708,19 +702,25 @@
             </ul>
         </li>
         <li>
-            <a href="#">
+            <a href="transactionReport.jsp">
                 <i class="fas fa-file-invoice-dollar"></i>
-                <span>Statements & Reports</span>
+                <span>Saving Reports</span>
             </a>
         </li>
         <li>
-            <a href="#">
-                <i class="fas fa-cog"></i>
-                <span>Settings</span>
+            <a href="fixedTransactionReport.jsp">
+                <i class="fas fa-file-invoice-dollar"></i>
+                <span>Fixed Reports</span>
             </a>
         </li>
+<%--        <li>--%>
+<%--            <a href="#">--%>
+<%--                <i class="fas fa-cog"></i>--%>
+<%--                <span>Settings</span>--%>
+<%--            </a>--%>
+<%--        </li>--%>
         <li>
-            <a href="#">
+            <a  href="${pageContext.request.contextPath}/logout" >
                 <i class="fas fa-sign-out-alt"></i>
                 <span>Logout</span>
             </a>
@@ -733,7 +733,7 @@
     <!-- Top Bar -->
     <section class="account-summary">
         <!-- Account 1 -->
-        <a href="accountDetails.jsp?acc=1234567890" class="account-card">
+        <a href="savingAccountDetails.jsp?acc=1234567890" class="account-card">
             <div class="account-type">Savings Account</div>
             <div class="account-number">Acc No: 1234567890</div>
             <div class="account-balance">$12,500.00</div>
@@ -744,7 +744,7 @@
         </a>
 
         <!-- Account 2 -->
-        <a href="accountDetails.jsp?acc=0987654321" class="account-card">
+        <a href="savingAccountDetails.jsp?acc=0987654321" class="account-card">
             <div class="account-type">Checking Account</div>
             <div class="account-number">Acc No: 0987654321</div>
             <div class="account-balance">$2,300.00</div>
@@ -755,7 +755,7 @@
         </a>
 
         <!-- Account 3 -->
-        <a href="accountDetails.jsp?acc=1122334455" class="account-card">
+        <a href="savingAccountDetails.jsp?acc=1122334455" class="account-card">
             <div class="account-type">Fixed Deposit</div>
             <div class="account-number">Acc No: 1122334455</div>
             <div class="account-balance">$25,000.00</div>

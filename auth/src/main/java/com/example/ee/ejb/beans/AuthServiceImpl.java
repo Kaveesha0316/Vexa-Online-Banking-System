@@ -21,7 +21,7 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public void update(User user) {
-
+        em.merge(user);
     }
 
     @Override

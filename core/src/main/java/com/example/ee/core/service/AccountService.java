@@ -16,5 +16,6 @@ public interface AccountService {
     Account findAccountByCustomerId(Long customerId);
     Account findFixedAccountByCustomerId(Long customerId);
     double findMonthlyIncomeByCustomerId(Long customerId);
+    Account findAccountById(Long accountId);
 
 }

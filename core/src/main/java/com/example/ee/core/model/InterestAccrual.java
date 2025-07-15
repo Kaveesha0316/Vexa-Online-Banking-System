@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 
 import java.io.Serializable;
 import java.time.LocalDate;
+import java.util.Date;
 
 @Entity
 @Table(name = "interest_accrual")
@@ -19,12 +20,12 @@ public class InterestAccrual implements Serializable {
 
     private Double amount;
 
-    private LocalDate accrualDate;
+    private Date accrualDate;
 
     public InterestAccrual() {
     }
 
-    public InterestAccrual(Account account, Double amount, LocalDate accrualDate) {
+    public InterestAccrual(Account account, Double amount, Date accrualDate) {
         this.account = account;
         this.amount = amount;
         this.accrualDate = accrualDate;
@@ -54,11 +55,11 @@ public class InterestAccrual implements Serializable {
         this.amount = amount;
     }
 
-    public LocalDate getAccrualDate() {
+    public Date getAccrualDate() {
         return accrualDate;
     }
 
-    public void setAccrualDate(LocalDate accrualDate) {
+    public void setAccrualDate(Date accrualDate) {
         this.accrualDate = accrualDate;
     }
 }

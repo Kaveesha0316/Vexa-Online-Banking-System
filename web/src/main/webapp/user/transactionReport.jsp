@@ -1,13 +1,14 @@
-<%@ taglib prefix="fmt" uri="jakarta.tags.fmt" %>
-<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
-<%@ page import="com.example.ee.core.model.Account" %>
+        <%@ page import="javax.naming.InitialContext" %>
 <%@ page import="com.example.ee.core.service.AccountService" %>
-<%@ page import="javax.naming.InitialContext" %>
+<%@ page import="com.example.ee.core.model.Account" %>
 <%@ page import="com.example.ee.core.service.TransactionService" %>
 <%@ page import="com.example.ee.core.model.Customer" %>
 <%@ page import="com.example.ee.core.model.Transaction" %>
 <%@ page import="java.util.List" %>
-<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+        <%@ page import="java.text.SimpleDateFormat" %>
+        <%@ page contentType="text/html;charset=UTF-8" language="java" %>
+        <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -47,6 +48,52 @@
             display: flex;
             min-height: 100vh;
             overflow-x: hidden;
+        }
+
+        /*////*/
+        h1 {
+            margin-bottom: 20px;
+        }
+        form {
+            background: #fff;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: inline-block;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: #fff;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        th, td {
+            padding: 12px;
+            border-bottom: 1px solid #ddd;
+        }
+        th {
+            background: #2563eb;
+            color: white;
+            text-align: left;
+        }
+        tr:hover {
+            background: #f0f0f0;
+        }
+        .btn {
+            padding: 8px 12px;
+            margin-top: 8px;
+            border: none;
+            background: #2563eb;
+            color: white;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .btn-download {
+            background: #10b981;
+        }
+        .btn:hover {
+            opacity: 0.9;
         }
 
         /* Sidebar Styles */
@@ -647,6 +694,7 @@
                 <span>Dashboard</span>
             </a>
         </li>
+
         <li class="has-submenu">
             <a href="#">
                 <i class="fas fa-exchange-alt"></i>
@@ -658,7 +706,7 @@
             </ul>
         </li>
         <li>
-            <a href="transactionReport.jsp">
+            <a href="transactionReport.jsp" class="active">
                 <i class="fas fa-file-invoice-dollar"></i>
                 <span>Saving Reports</span>
             </a>
@@ -684,24 +732,20 @@
     </ul>
 </aside>
 <%
-    Account savingaccount;
-    try {
 
+    Account account;
+    List<Transaction> transactions;
+    try {
         InitialContext ic = new InitialContext();
         AccountService accountService = (AccountService) ic.lookup("com.example.ee.core.service.AccountService");
         TransactionService transactionService = (TransactionService) ic.lookup("com.example.ee.core.service.TransactionService");
 
         Customer customer = (Customer) request.getSession().getAttribute("customer");
 
-        savingaccount = accountService.findAccountByCustomerId(customer.getCustomerId());
+        account = accountService.findAccountByCustomerId(customer.getCustomerId());
 
-        List<Transaction> transactionList = transactionService.findTransactionHistory(savingaccount.getAccountId());
-
-        pageContext.setAttribute("savingaccount", savingaccount);
-        pageContext.setAttribute("customer", customer);
-        pageContext.setAttribute("transList",transactionList);
-
-        System.out.println(transactionList);
+//        account = (Account) request.getAttribute("account");
+        transactions = (List<Transaction>) request.getAttribute("transactions");
 
     } catch (Exception e) {
         throw new RuntimeException(e);
@@ -709,99 +753,64 @@
 %>
 <!-- Main Content -->
 <main class="main-content">
-    <!-- Top Bar -->
-    <!-- Top Bar -->
-    <div class="top-bar">
-        <div class="page-title">
-            <h2>Account Overview</h2>
-            <p>Details and transaction history for your account</p>
-        </div>
+    <h1>Saving Account Transaction Report</h1>
+    <form id="filterForm" method="get" action="<%=request.getContextPath()%>/user/transactionReport">
+    <input  type="hidden" name="accountId" value="<%=account != null ? account.getAccountId() : ""%>"/>
+        From:
+        <input type="date" name="fromDate" required>
+        To:
+        <input type="date" name="toDate" required>
+        <button type="submit" class="btn">Search</button>
+        <button type="button" id="down"  onclick="download();" class="btn btn-download">Download PDF</button>
+    </form>
 
-    </div>
 
-    <!-- Account Details Card -->
-    <div class="card">
-        <div class="card-header">
-            <h3 class="card-title">Savings Account</h3>
-            <div class="card-action">Manage Account</div>
-        </div>
-        <div style="display: flex; flex-wrap: wrap; gap: 40px;">
-            <div>
-                <p style="color: var(--secondary); margin-bottom: 4px;">Account Number</p>
-                <h4 style="font-size: 18px; font-weight: 500;">${savingaccount.accountNumber}</h4>
-            </div>
-            <div>
-                <p style="color: var(--secondary); margin-bottom: 4px;">Balance</p>
-                <h4 style="font-size: 18px; font-weight: 500;">Rs.${savingaccount.balance}</h4>
-            </div>
-            <div>
-                <p style="color: var(--secondary); margin-bottom: 4px;">Type</p>
-                <h4 style="font-size: 18px; font-weight: 500;">Saving</h4>
-            </div>
-            <div>
-                <p style="color: var(--secondary); margin-bottom: 4px;">Interest Rate</p>
-                <h4 style="font-size: 18px; font-weight: 500;">${savingaccount.interestRate}%</h4>
-            </div>
-            <div>
-                <p style="color: var(--secondary); margin-bottom: 4px;">Status</p>
-                <h4
-                        style="font-size: 18px; font-weight: 500; color: ${savingaccount.status.toString() == 'INACTIVE' ? 'var(--danger)' : 'var(--success)'};">
-                    ${savingaccount.status}
-                </h4>
-            </div>
-            <div>
-                <p style="color: var(--secondary); margin-bottom: 4px;">Create Date</p>
-                <h4 style="font-size: 18px; font-weight: 500; "><fmt:formatDate value="${savingaccount.createdAt}" pattern="MMM d, yyyy" /></h4>
-            </div>
-        </div>
-    </div>
-
-    <!-- Recent Transactions -->
-    <div class="card">
-        <div class="card-header">
-            <h3 class="card-title">Recent Transactions</h3>
-            <div class="card-action">View All</div>
-        </div>
-        <div class="transactions">
-            <table>
-                <thead>
-                <tr>
-                    <th>To Account</th>
-                    <th>Details</th>
-                    <th>Date</th>
-                    <th>Amount</th>
-                    <th>Status</th>
-                </tr>
-                </thead>
-                <tbody>
-                <c:forEach var="transaction" items="${transList}">
-                    <tr>
-                        <td>****** ${transaction.todAccount.accountNumber.substring(6)}</td>
-                        <td>
-                            <div class="transaction-detail">
-                                <div class="transaction-info">
-                                    <h4>${transaction.description}</h4>
-                                </div>
-                            </div>
-                        </td>
-                        <td><fmt:formatDate value="${transaction.createdAt}" pattern="MMM d, yyyy" /></td>
-                        <c:choose>
-                            <c:when test="${transaction.fromAccount.accountId == savingaccount.accountId}">
-                                <td class="transaction-amount negative">-Rs.${transaction.amount}</td>
-                            </c:when>
-                            <c:otherwise>
-                                <td class="transaction-amount positive">+Rs.${transaction.amount}</td>
-                            </c:otherwise>
-                        </c:choose>
-                        <td><span class="transaction-status status-completed">Completed</span></td>
-                    </tr>
-                </c:forEach>
-
-                </tbody>
-            </table>
-        </div>
-    </div>
-
+    <table>
+        <thead>
+        <tr>
+            <th>Date</th>
+            <th>TO Account</th>
+            <th>Description</th>
+            <th>Amount</th>
+            <th>Type</th>
+        </tr>
+        </thead>
+        <tbody>
+        <%
+            if (transactions != null && !transactions.isEmpty()) {
+                SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss a");
+                for (Transaction t : transactions) {
+                    request.setAttribute("transaction", t);
+                    request.setAttribute("savingaccount", account);
+        %>
+        <tr>
+            <td><%=sdf.format(t.getCreatedAt())%></td>
+            <td><%=t.getTodAccount().getAccountNumber()%></td>
+            <td><%=t.getDescription()%></td>
+            <c:choose>
+            <c:when test="${transaction.fromAccount.accountId == savingaccount.accountId}">
+<%--                <td class="transaction-amount negative">-Rs.${transaction.amount}</td>--%>
+                <td class="transaction-amount negative">-RS.<%=String.format("%.2f", t.getAmount())%></td>
+            </c:when>
+            <c:otherwise>
+<%--                <td class="transaction-amount positive">+Rs.${transaction.amount}</td>--%>
+                <td class="transaction-amount positive">+RS.<%=String.format("%.2f", t.getAmount())%></td>
+            </c:otherwise>
+            </c:choose>
+            <td><%=t.getTransactionType().toString()%></td>
+        </tr>
+        <%
+            }
+        } else {
+        %>
+        <tr>
+            <td colspan="4" style="text-align:center;">No transactions found.</td>
+        </tr>
+        <%
+            }
+        %>
+        </tbody>
+    </table>
 </main>
 
 <script>
@@ -842,6 +851,36 @@
             this.classList.add('active');
         });
     });
+
+    function download() {
+        const currentUrl = window.location.href;
+        const url = new URL(currentUrl);
+        const params = url.searchParams;
+
+        const hasAccountId = params.has("accountId");
+        const hasFromDate = params.has("fromDate");
+        const hasToDate = params.has("toDate");
+
+
+        if (hasAccountId && hasFromDate && hasToDate) {
+            const newUrl = currentUrl.replace("/user/transactionReport", "/user/downloadTransactionReport");
+
+            console.log("New URL:", newUrl);
+            window.location.href = newUrl;
+            return newUrl;
+        } else {
+            Swal.fire({
+                icon: "error",
+                title: "Failed",
+                text: "First Search Results"
+            });
+            console.log("Missing one or more required parameters.");
+        }
+
+    }
+
 </script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
 </body>
 </html>

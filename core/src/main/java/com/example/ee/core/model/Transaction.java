@@ -9,8 +9,31 @@ import java.util.Date;
 @Entity
 @Table(name = "transactions")
 @NamedQueries({
-        @NamedQuery(name = "Transaction.findLast5TrnsByCusId",query = "SELECT t FROM Transaction t where t.fromAccount.accountId=:accNo or t.todAccount.accountId=:accNo2 order by t.createdAt DESC")
+        @NamedQuery(name = "Transaction.findLast5TrnsByCusId",query = "SELECT t FROM Transaction t where t.fromAccount.accountId=:accNo or t.todAccount.accountId=:accNo2 order by t.createdAt DESC"),
+        @NamedQuery(
+                name = "Transaction.findTransactionsByAccountAndDateRange",
+                query = "SELECT t FROM Transaction t " +
+                        "WHERE (t.fromAccount.accountId = :accNo OR t.todAccount.accountId = :accNo2) " +
+                        "AND t.createdAt BETWEEN :from AND :to " +
+                        "ORDER BY t.createdAt DESC"
+        ),
+        @NamedQuery(
+                name = "Transaction.findLast30Daysexpens",
+                query = "SELECT t FROM Transaction t " +
+                        "WHERE t.fromAccount.accountId = :accId " +
+                        "AND t.createdAt >= :fromDate " +
+                        "ORDER BY t.createdAt DESC"
+        ),
+        @NamedQuery(
+                name = "Transaction.findLast30DaysIncome",
+                query = "SELECT t FROM Transaction t " +
+                        "WHERE t.todAccount.accountId = :accId " +
+                        "AND t.createdAt >= :fromDate " +
+                        "ORDER BY t.createdAt DESC"
+        ),
+
 })
+
 public class Transaction implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

@@ -113,4 +113,9 @@ public class AccountServiceImpl implements AccountService {
         return 0;
     }
 
+    @Override
+    public Account findAccountById(Long accountId) {
+        return em.find(Account.class, accountId);
+    }
+
 }

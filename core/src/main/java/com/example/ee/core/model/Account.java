@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
+import java.util.Date;
 import java.util.List;
 
 
@@ -12,7 +13,8 @@ import java.util.List;
 @NamedQueries({
         @NamedQuery(name = "Account.getCuscount", query = "select a from Account a where a.customer.customerId =:customerId"),
         @NamedQuery(name = "Account.findByAccountNo", query = "select a from Account a where a.accountNumber =:accountNo"),
-        @NamedQuery(name = "Account.findByCustomerId", query = "select a from Account a where a.customer.customerId =:customerId")
+        @NamedQuery(name = "Account.findByCustomerId", query = "select a from Account a where a.customer.customerId =:customerId"),
+        @NamedQuery(name = "Account.findAllAccounts", query = "select a from Account a where a.status =:sts")
 })
 public class Account implements Serializable {
 
@@ -34,7 +36,7 @@ public class Account implements Serializable {
     @Enumerated(EnumType.STRING)
     private Status status;
 
-    private LocalDateTime createdAt;
+    private Date createdAt;
 
     @OneToMany(mappedBy = "fromAccount", cascade = CascadeType.ALL)
     private List<Transaction> fromAccount;
@@ -45,7 +47,7 @@ public class Account implements Serializable {
     public Account() {
     }
 
-    public Account(Customer customer, String accountNumber, AccountType accountType, Double balance, Double interestRate, Status status, LocalDateTime createdAt) {
+    public Account(Customer customer, String accountNumber, AccountType accountType, Double balance, Double interestRate, Status status, Date createdAt) {
         this.customer = customer;
         this.accountNumber = accountNumber;
         this.accountType = accountType;
@@ -111,11 +113,11 @@ public class Account implements Serializable {
         this.status = status;
     }
 
-    public LocalDateTime getCreatedAt() {
+    public Date getCreatedAt() {
         return createdAt;
     }
 
-    public void setCreatedAt(LocalDateTime createdAt) {
+    public void setCreatedAt(Date createdAt) {
         this.createdAt = createdAt;
     }
 }

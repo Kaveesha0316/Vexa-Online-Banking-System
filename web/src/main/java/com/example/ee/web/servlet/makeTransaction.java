@@ -6,7 +6,6 @@ import com.example.ee.core.service.AccountService;
 import com.example.ee.core.service.TransactionOrchestratorService;
 import com.example.ee.core.service.TransactionService;
 import jakarta.ejb.EJB;
-import jakarta.ejb.EJBTransactionRolledbackException;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -14,7 +13,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
-import java.time.LocalDateTime;
 import java.util.Date;
 
 @WebServlet("/make_transaction")
@@ -55,7 +53,7 @@ public class makeTransaction extends HttpServlet {
                 Transaction transaction = new Transaction(
                         fromAccount,
                         toAccount,
-                        TransactionType.WITHDRAWAL,
+                        TransactionType.TRANSFER,
                         Double.parseDouble(amount),
                         description,
                         new Date()

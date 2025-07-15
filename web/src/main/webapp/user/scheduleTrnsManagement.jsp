@@ -643,12 +643,7 @@
                 <span>Dashboard</span>
             </a>
         </li>
-        <li>
-            <a href="accountsManagement.jsp">
-                <i class="fas fa-wallet"></i>
-                <span>My Accounts</span>
-            </a>
-        </li>
+
         <li class="has-submenu">
             <a href="#" class="active">
                 <i class="fas fa-exchange-alt"></i>
@@ -660,19 +655,25 @@
             </ul>
         </li>
         <li>
-            <a href="#">
+            <a href="transactionReport.jsp">
                 <i class="fas fa-file-invoice-dollar"></i>
-                <span>Statements & Reports</span>
+                <span>Saving Reports</span>
             </a>
         </li>
         <li>
-            <a href="#">
-                <i class="fas fa-cog"></i>
-                <span>Settings</span>
+            <a href="fixedTransactionReport.jsp">
+                <i class="fas fa-file-invoice-dollar"></i>
+                <span>Fixed Reports</span>
             </a>
         </li>
+<%--        <li>--%>
+<%--            <a href="#">--%>
+<%--                <i class="fas fa-cog"></i>--%>
+<%--                <span>Settings</span>--%>
+<%--            </a>--%>
+<%--        </li>--%>
         <li>
-            <a href="#">
+            <a  href="${pageContext.request.contextPath}/logout" >
                 <i class="fas fa-sign-out-alt"></i>
                 <span>Logout</span>
             </a>

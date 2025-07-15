@@ -13,6 +13,7 @@ import jakarta.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
+import java.util.Date;
 import java.util.List;
 
 @WebServlet("/account_register")
@@ -104,7 +105,7 @@ public class AccountRegistration extends HttpServlet {
                     acBalance,
                     interestRate,
                     Status.ACTIVE,
-                    LocalDateTime.now()
+                    new Date()
             );
 
             accountService.createAccount(account);
