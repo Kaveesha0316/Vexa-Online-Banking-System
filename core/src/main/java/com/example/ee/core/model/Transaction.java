@@ -31,6 +31,10 @@ import java.util.Date;
                         "AND t.createdAt >= :fromDate " +
                         "ORDER BY t.createdAt DESC"
         ),
+        @NamedQuery(name = "Transaction.findLast5Trns",query = "SELECT t FROM Transaction t order by t.createdAt DESC"),
+        @NamedQuery(name = "Transaction.findtotal",query = "SELECT t FROM Transaction t order by t.createdAt desc "),
+
+
 
 })
 

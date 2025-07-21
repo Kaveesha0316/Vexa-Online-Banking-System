@@ -1,4 +1,12 @@
-<%--
+<%@ page import="com.example.ee.core.service.AuthService" %>
+<%@ page import="javax.naming.InitialContext" %>
+<%@ page import="com.example.ee.core.model.Customer" %>
+<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
+<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ page import="com.example.ee.core.model.User" %>
+<%@ page import="java.util.List" %><%--
+
   Created by IntelliJ IDEA.
   User: user
   Date: 7/6/2025
@@ -763,7 +771,7 @@
             </a>
         </li>
         <li>
-            <a href="#">
+            <a  href="${pageContext.request.contextPath}/logout" >
                 <i class="fas fa-sign-out-alt"></i>
                 <span>Logout</span>
             </a>
@@ -771,6 +779,29 @@
     </ul>
 </aside>
 
+<%
+    try {
+
+        InitialContext ic = new InitialContext();
+        AuthService authService = (AuthService) ic.lookup("com.example.ee.core.service.AuthService");
+
+
+        Customer admin = (Customer) request.getSession().getAttribute("admin");
+
+
+        List<User> userList = authService.findAllCustomers();
+
+
+        System.out.println(userList);
+
+        pageContext.setAttribute("admin", admin);
+        pageContext.setAttribute("userList",userList);
+
+
+    } catch (Exception e) {
+        throw new RuntimeException(e);
+    }
+%>
 
 
 <!-- Main Content -->
@@ -799,28 +830,26 @@
             </thead>
             <tbody id="customerTableBody">
             <!-- Example rows -->
-            <tr>
-                <td>John Doe</td>
-                <td>john@example.com</td>
-                <td>+1 234 567 890</td>
-                <td>123 Main St, NY</td>
-                <td>987654321V</td>
+        <c:forEach var="user" items="${userList}">
+            <tr data-nic="${user.customer.nic}">
+                <td>${user.customer.firstName} ${user.customer.lastName}</td>
+                <td>${user.customer.email}</td>
+                <td>${user.customer.phoneNumber}</td>
+                <td>${user.customer.address}</td>
+                <td>${user.customer.nic}</td>
                 <td>
-                    <button class="btn btn-primary btn-block">Block</button>
-                    <button class="btn btn-outline btn-unlock">Unlock</button>
+                    <c:choose>
+                    <c:when test="${user.status.toString() == 'ACTIVE'}">
+                        <a style="text-decoration: none" href="${pageContext.request.contextPath}/admin/change_status?userId=${user.userId}" class="btn btn-outline btn-unlock">Unlock</a>
+                </c:when>
+                <c:otherwise>
+                    <a style="text-decoration: none"  href="${pageContext.request.contextPath}/admin/change_status?userId=${user.userId}" class="btn btn-primary btn-block">Block</a>
+                </c:otherwise>
+                </c:choose>
+
                 </td>
             </tr>
-            <tr>
-                <td>Jane Smith</td>
-                <td>jane@example.com</td>
-                <td>+1 555 123 456</td>
-                <td>456 Park Ave, CA</td>
-                <td>123456789V</td>
-                <td>
-                    <button class="btn btn-primary btn-block">Block</button>
-                    <button class="btn btn-outline btn-unlock">Unlock</button>
-                </td>
-            </tr>
+        </c:forEach>
             <!-- Add more rows as needed -->
             </tbody>
         </table>
@@ -866,6 +895,22 @@
             this.classList.add('active');
         });
     });
+
+        // Search filtering
+        document.getElementById('searchInput').addEventListener('input', function() {
+        const searchValue = this.value.toLowerCase();
+        const rows = document.querySelectorAll('#customerTableBody tr');
+        rows.forEach(row => {
+        const nic = row.getAttribute('data-nic').toLowerCase();
+        if (nic.includes(searchValue)) {
+        row.style.display = '';
+    } else {
+        row.style.display = 'none';
+    }
+    });
+    });
+
+
 </script>
 </body>
 </html>

@@ -710,7 +710,7 @@
             </a>
         </li>
         <li>
-            <a href="#">
+            <a  href="${pageContext.request.contextPath}/logout" >
                 <i class="fas fa-sign-out-alt"></i>
                 <span>Logout</span>
             </a>
@@ -872,7 +872,7 @@
     });
 
 async function register(event) {
-    // ✅ Prevent default form submission
+
     if (event) event.preventDefault();
 
     const firstName = document.getElementById("firstName").value.trim();
@@ -883,7 +883,7 @@ async function register(event) {
     const nic = document.getElementById("nic").value.trim();
     const address = document.getElementById("address").value.trim();
 
-    // ✅ Check empty fields
+
     if (!firstName || !lastName || !email || !phone || !dob || !nic || !address) {
         Swal.fire({
             icon: "error",
@@ -893,7 +893,7 @@ async function register(event) {
         return;
     }
 
-    // ✅ Validate email
+
     const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailPattern.test(email)) {
         Swal.fire({
@@ -904,7 +904,7 @@ async function register(event) {
         return;
     }
 
-    // ✅ Validate age >= 18
+
     const birthDate = new Date(dob);
     const today = new Date();
     let age = today.getFullYear() - birthDate.getFullYear();
@@ -921,7 +921,7 @@ async function register(event) {
         return;
     }
 
-    // ✅ Validate Sri Lankan phone number
+
     const slPhonePattern = /^(?:\+94|0)?7[01245678]\d{7}$/;
     if (!slPhonePattern.test(phone)) {
         Swal.fire({
@@ -932,7 +932,7 @@ async function register(event) {
         return;
     }
 
-    // ✅ Validate NIC (old 9-digit or new 12-digit)
+
     const nicPattern = /^(\d{9}[vVxX]|\d{12})$/;
     if (!nicPattern.test(nic)) {
         Swal.fire({
@@ -943,7 +943,7 @@ async function register(event) {
         return;
     }
 
-    // ✅ Send to server
+
     const formData = new URLSearchParams();
     formData.append("firstName", firstName);
     formData.append("lastName", lastName);
@@ -969,7 +969,7 @@ async function register(event) {
                 title: "Registration Complete",
                 text: "Customer successfully registered."
             }).then(() => {
-                window.location.reload();
+                window.location.replace("/banking-system/admin/accoutRegistration.jsp");
             });
         }else {
             Swal.fire({

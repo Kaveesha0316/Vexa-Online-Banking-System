@@ -2,8 +2,11 @@ package com.example.ee.web.servlet;
 
 import com.example.ee.core.model.Transaction;
 import com.example.ee.core.service.TransactionService;
+import jakarta.annotation.security.DeclareRoles;
 import jakarta.ejb.EJB;
 import jakarta.servlet.ServletException;
+import jakarta.servlet.annotation.HttpConstraint;
+import jakarta.servlet.annotation.ServletSecurity;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
@@ -14,7 +17,8 @@ import java.io.OutputStream;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
-
+@DeclareRoles({"ADMIN","CUSTOMER"})
+@ServletSecurity(@HttpConstraint(rolesAllowed = {"CUSTOMER"}))
 @WebServlet("/user/downloadTransactionReport")
 public class TransactionReportServlet extends HttpServlet {
 

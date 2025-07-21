@@ -1,11 +1,13 @@
 package com.example.ee.ejb.beans;
 
+import com.example.ee.core.Interceptor.AuditInterceptor;
 import com.example.ee.core.exception.InsufficientFundsException;
 import com.example.ee.core.model.*;
 import com.example.ee.core.service.ScheduledTransferService;
 import com.example.ee.core.service.TransactionOrchestratorService;
 import jakarta.annotation.Resource;
 import jakarta.ejb.*;
+import jakarta.interceptor.Interceptors;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 
@@ -24,11 +26,12 @@ public class ScheduledTransferServiceImpl implements ScheduledTransferService {
     @EJB
     private TransactionOrchestratorService transactionOrchestratorService;
 
+
     @Override
     public void save(ScheduledTransfer transfer) {
         transfer.setScheduleSts(ScheduleSts.PENDING);
         em.persist(transfer);
-        em.flush(); // to get scheduleId
+        em.flush();
 
         scheduleTimer(transfer);
     }
@@ -37,10 +40,10 @@ public class ScheduledTransferServiceImpl implements ScheduledTransferService {
     public void cancel(Long scheduleId) {
         ScheduledTransfer transfer = em.find(ScheduledTransfer.class, scheduleId);
         if (transfer == null || transfer.getScheduleSts() != ScheduleSts.PENDING) {
-            return; // Either not found or already executed/cancelled
+            return;
         }
 
-// Cancel the associated timer
+
         for (Timer timer : timerService.getTimers()) {
             if (scheduleId.equals(timer.getInfo())) {
                 timer.cancel();
@@ -48,8 +51,8 @@ public class ScheduledTransferServiceImpl implements ScheduledTransferService {
             }
         }
 
-// Update the transfer status
-        transfer.setScheduleSts(ScheduleSts.FAILED); // Or use a specific CANCELLED status if you have one
+
+        transfer.setScheduleSts(ScheduleSts.FAILED);
         em.merge(transfer);
     }
 
@@ -67,8 +70,29 @@ public class ScheduledTransferServiceImpl implements ScheduledTransferService {
         return scheduledTransferList;
     }
 
+    @Override
+    public int getpendingTransactions() {
+        List<ScheduledTransfer> scheduledTransferList = em.createNamedQuery("ScheduledTransfer.FindpendingHistory", ScheduledTransfer.class).getResultList();
+
+        int pendingTransactions = 0;
+        for (ScheduledTransfer scheduledTransfer : scheduledTransferList) {
+            if (scheduledTransfer.getScheduleSts() == ScheduleSts.PENDING) {
+                pendingTransactions++;
+            }
+        }
+
+        return pendingTransactions;
+    }
+
+    @Override
+    public List<ScheduledTransfer> findAllScheduledTransfers() {
+        List<ScheduledTransfer> scheduledTransferList = em.createNamedQuery("ScheduledTransfer.FindAllShedules", ScheduledTransfer.class).getResultList();
+
+        return scheduledTransferList;
+    }
+
     private void scheduleTimer(ScheduledTransfer transfer) {
-        Date executionDate = transfer.getScheduledDateTime(); // already java.util.Date
+        Date executionDate = transfer.getScheduledDateTime();
 
         TimerConfig config = new TimerConfig();
         config.setInfo(transfer.getScheduleId());
@@ -83,8 +107,8 @@ public class ScheduledTransferServiceImpl implements ScheduledTransferService {
         ScheduledTransfer transfer = em.find(ScheduledTransfer.class, scheduleId);
 
         if (transfer == null || transfer.getScheduleSts() != ScheduleSts.PENDING) {
-            System.out.println("Insufficient Balance");
-            return; // Already processed or deleted
+            System.out.println("Already processed or invalid");
+            return;
         }
 
         try {

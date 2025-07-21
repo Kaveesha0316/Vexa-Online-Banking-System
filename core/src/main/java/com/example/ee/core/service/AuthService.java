@@ -1,7 +1,10 @@
 package com.example.ee.core.service;
 
+import com.example.ee.core.model.Customer;
 import com.example.ee.core.model.User;
 import jakarta.ejb.Remote;
+
+import java.util.List;
 
 @Remote
 public interface AuthService {
@@ -11,5 +14,8 @@ public interface AuthService {
     User findByUserNameAndPassword(String userName, String password);
     boolean isUserValid(String username, String password);
     User findUserByCustomerId(Long customerId);
+    int ActiveCustomerCount();
+    List<User> findAllCustomers();
+    void changeStatus(Long userId);
 
 }

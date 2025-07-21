@@ -46,12 +46,6 @@
         </dependency>
         <dependency>
             <groupId>com.example.ee</groupId>
-            <artifactId>reporting</artifactId>
-            <version>1.0</version>
-            <type>ejb</type>
-        </dependency>
-        <dependency>
-            <groupId>com.example.ee</groupId>
             <artifactId>web</artifactId>
             <version>1.0</version>
             <type>war</type>
@@ -95,11 +89,6 @@
                             <groupId>com.example.ee</groupId>
                             <artifactId>transaction</artifactId>
                             <bundleFileName>transaction-module.jar</bundleFileName>
-                        </ejbModule>
-                        <ejbModule>
-                            <groupId>com.example.ee</groupId>
-                            <artifactId>reporting</artifactId>
-                            <bundleFileName>reporting-module.jar</bundleFileName>
                         </ejbModule>
                         <webModule>
                             <groupId>com.example.ee</groupId>

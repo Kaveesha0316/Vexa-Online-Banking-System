@@ -1,12 +1,16 @@
 package com.example.ee.ejb.beans;
 
+import com.example.ee.core.Interceptor.AuditInterceptor;
+import com.example.ee.core.annotaion.Audited;
 import com.example.ee.core.model.Transaction;
+import com.example.ee.core.model.TransactionType;
 import com.example.ee.core.service.AccountService;
 import com.example.ee.core.service.TransactionService;
 import jakarta.ejb.EJB;
 import jakarta.ejb.Stateless;
 import jakarta.ejb.TransactionAttribute;
 import jakarta.ejb.TransactionAttributeType;
+import jakarta.interceptor.Interceptors;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 
@@ -74,6 +78,36 @@ public class TransactionServiceImpl implements TransactionService {
 
 
         return totalexpence;
+    }
+
+    @Override
+    public List<Transaction> findlast5Transaction() {
+
+        List<Transaction> transactionList = em.createNamedQuery("Transaction.findLast5Trns", Transaction.class).setMaxResults(5).getResultList();
+        return transactionList;
+    }
+
+    @Override
+    public int findTotalTransactions() {
+        List<Transaction> transactionList = em.createNamedQuery("Transaction.findtotal", Transaction.class).getResultList();
+        int totalTransactions = 0;
+        for (Transaction transaction : transactionList) {
+            if(transaction.getTransactionType()== TransactionType.TRANSFER){
+                totalTransactions ++;
+            }
+        }
+        return totalTransactions;
+    }
+
+    @Override
+    public List<Transaction> findAllTransactions() {
+        List<Transaction> transactionList = em.createNamedQuery("Transaction.findtotal", Transaction.class).getResultList();
+            return transactionList;
+    }
+
+    @Override
+    public Transaction findTransactionById(Long transactionId) {
+        return em.find(Transaction.class, transactionId);
     }
 
     @Override

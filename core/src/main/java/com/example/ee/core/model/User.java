@@ -9,7 +9,9 @@ import java.time.LocalDateTime;
 @Table(name = "users")
 @NamedQueries({
         @NamedQuery(name = "user.findByUsernameAndPassword", query = "select u from User u where u.username=:username AND u.passwordHash=:password"),
-        @NamedQuery(name = "user.findByUserByCustomerId", query = "select u from User u where u.customer.customerId=:customerid")
+        @NamedQuery(name = "user.findByUserByCustomerId", query = "select u from User u where u.customer.customerId=:customerid"),
+        @NamedQuery(name = "user.findCustomerCount", query = "select u from User u "),
+        @NamedQuery(name = "user.findCustomers", query = "select u from User u WHERE u.role=:role order by u.createdAt desc ")
 })
 public class User implements Serializable {
     @Id

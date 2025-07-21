@@ -3,8 +3,12 @@ package com.example.ee.web.servlet;
 import com.example.ee.core.model.Customer;
 import com.example.ee.core.model.User;
 import com.example.ee.core.service.AuthService;
+import com.example.ee.core.util.Encryption;
+import jakarta.annotation.security.DeclareRoles;
 import jakarta.ejb.EJB;
 import jakarta.servlet.ServletException;
+import jakarta.servlet.annotation.HttpConstraint;
+import jakarta.servlet.annotation.ServletSecurity;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
@@ -12,6 +16,8 @@ import jakarta.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
 
+@DeclareRoles({"ADMIN","CUSTOMER"})
+@ServletSecurity(@HttpConstraint(rolesAllowed = {"CUSTOMER"}))
 @WebServlet("/change_password")
 public class PasswordChange extends HttpServlet {
 
@@ -28,8 +34,8 @@ public class PasswordChange extends HttpServlet {
 
         User user = authService.findUserByCustomerId(customer.getCustomerId());
 
-        if (verificationCode.equals(user.getVerificationCode()) && oldPassword.equals(user.getPasswordHash())) {
-            user.setPasswordHash(newPassword);
+        if (verificationCode.equals(user.getVerificationCode()) &&  Encryption.encrypt(oldPassword).equals(user.getPasswordHash())) {
+            user.setPasswordHash( Encryption.encrypt(newPassword));
             authService.update(user);
             response.getWriter().write("success");
         }else {

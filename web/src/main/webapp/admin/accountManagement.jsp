@@ -1,3 +1,11 @@
+<%@ page import="javax.naming.InitialContext" %>
+<%@ page import="com.example.ee.core.service.AccountService" %>
+<%@ page import="com.example.ee.core.model.Customer" %>
+<%@ page import="com.example.ee.core.model.Account" %>
+<%@ page import="java.util.List" %>
+<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
+<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%--
   Created by IntelliJ IDEA.
   User: user
@@ -764,7 +772,7 @@
             </a>
         </li>
         <li>
-            <a href="#">
+            <a  href="${pageContext.request.contextPath}/logout" >
                 <i class="fas fa-sign-out-alt"></i>
                 <span>Logout</span>
             </a>
@@ -772,6 +780,27 @@
     </ul>
 </aside>
 
+
+<%
+    try {
+
+        InitialContext ic = new InitialContext();
+        AccountService accountService = (AccountService) ic.lookup("com.example.ee.core.service.AccountService");
+
+
+        Customer admin = (Customer) request.getSession().getAttribute("admin");
+
+        List<Account> accountList = accountService.findAllAccounts();
+
+
+        pageContext.setAttribute("admin", admin);
+        pageContext.setAttribute("accountList",accountList);
+
+
+    } catch (Exception e) {
+        throw new RuntimeException(e);
+    }
+%>
 
 
 <!-- Main Content -->
@@ -801,30 +830,27 @@
             </thead>
             <tbody id="customerTableBody">
             <!-- Example rows -->
-            <tr>
-                <td>John Doe</td>
-                <td>john@example.com</td>
-                <td>+1 234 567 890</td>
-                <td>123 Main St, NY</td>
-                <td>987654321V</td>
-                <td>987654321V</td>
-                <td>
-                    <button class="btn btn-primary btn-block">Block</button>
-                    <button class="btn btn-outline btn-unlock">Unlock</button>
-                </td>
-            </tr>
-            <tr>
-                <td>Jane Smith</td>
-                <td>jane@example.com</td>
-                <td>+1 555 123 456</td>
-                <td>456 Park Ave, CA</td>
-                <td>123456789V</td>
-                <td>987654321V</td>
-                <td>
-                    <button class="btn btn-primary btn-block">Block</button>
-                    <button class="btn btn-outline btn-unlock">Unlock</button>
-                </td>
-            </tr>
+            <c:forEach var="account" items="${accountList}">
+                <tr data-nic="${account.accountNumber}">
+                    <td>${account.accountNumber}</td>
+                    <td>${account.customer.nic}</td>
+                    <td>${account.customer.phoneNumber}</td>
+                    <td>Rs${account.balance}0</td>
+                    <td>${account.accountType.toString()}</td>
+                    <td>${account.interestRate}0%</td>
+                    <td>
+                        <c:choose>
+                            <c:when test="${account.status.toString() == 'ACTIVE'}">
+                                <a style="text-decoration: none" href="${pageContext.request.contextPath}/admin/change_Accstatus?acId=${account.accountId}" class="btn btn-outline btn-unlock">ACTIVE</a>
+                            </c:when>
+                            <c:otherwise>
+                                <a style="text-decoration: none"  href="${pageContext.request.contextPath}/admin/change_Accstatus?acId=${account.accountId}" class="btn btn-primary btn-block">INACTIVE</a>
+                            </c:otherwise>
+                        </c:choose>
+
+                    </td>
+                </tr>
+            </c:forEach>
             <!-- Add more rows as needed -->
             </tbody>
         </table>
@@ -868,6 +894,20 @@
                 item.classList.remove('active');
             });
             this.classList.add('active');
+        });
+    });
+
+    // Search filtering
+    document.getElementById('searchInput').addEventListener('input', function() {
+        const searchValue = this.value.toLowerCase();
+        const rows = document.querySelectorAll('#customerTableBody tr');
+        rows.forEach(row => {
+            const nic = row.getAttribute('data-nic').toLowerCase();
+            if (nic.includes(searchValue)) {
+                row.style.display = '';
+            } else {
+                row.style.display = 'none';
+            }
         });
     });
 </script>

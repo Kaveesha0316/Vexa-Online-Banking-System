@@ -1,10 +1,17 @@
-<%--
+<%@ page import="javax.naming.InitialContext" %>
+<%@ page import="com.example.ee.core.service.TransactionService" %>
+<%@ page import="com.example.ee.core.model.Customer" %>
+<%@ page import="com.example.ee.core.model.Transaction" %>
+<%@ page import="java.util.List" %><%--
   Created by IntelliJ IDEA.
   User: user
   Date: 7/6/2025
   Time: 3:48 PM
   To change this template use File | Settings | File Templates.
 --%>
+<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
+<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -764,7 +771,7 @@
             </a>
         </li>
         <li>
-            <a href="#">
+            <a  href="${pageContext.request.contextPath}/logout" >
                 <i class="fas fa-sign-out-alt"></i>
                 <span>Logout</span>
             </a>
@@ -772,6 +779,29 @@
     </ul>
 </aside>
 
+
+<%
+    try {
+
+        InitialContext ic = new InitialContext();
+        TransactionService transactionService = (TransactionService) ic.lookup("com.example.ee.core.service.TransactionService");
+
+
+        Customer admin = (Customer) request.getSession().getAttribute("admin");
+
+
+        List<Transaction> transactionList = transactionService.findAllTransactions();
+
+
+
+        pageContext.setAttribute("admin", admin);
+        pageContext.setAttribute("transactionList",transactionList);
+
+
+    } catch (Exception e) {
+        throw new RuntimeException(e);
+    }
+%>
 
 
 <!-- Main Content -->
@@ -790,7 +820,6 @@
         <table class="customers-table">
             <thead>
             <tr>
-                <th>#</th>
                 <th>From Acc</th>
                 <th>To Acc</th>
                 <th>Type</th>
@@ -801,25 +830,17 @@
             </thead>
             <tbody id="customerTableBody">
             <!-- Example rows -->
-            <tr>
-                <td>John Doe</td>
-                <td>john@example.com</td>
-                <td>+1 234 567 890</td>
-                <td>123 Main St, NY</td>
-                <td>987654321V</td>
-                <td>987654321V</td>
-                <td>987654321V</td>
+            <c:forEach var="transaction" items="${transactionList}">
+            <tr data-nic="${transaction.fromAccount.accountNumber}">
+                <td>${empty transaction.fromAccount.accountNumber ? 'From Bank' : transaction.fromAccount.accountNumber}</td>
+                <td>${transaction.todAccount.accountNumber}</td>
+                <td>${transaction.transactionType.toString()}</td>
+                <td>Rs.${transaction.amount}0</td>
+                <td>${transaction.description}</td>
+                <td><fmt:formatDate value="${transaction.createdAt}" pattern="MMM d, yyyy" /></td>
+            </tr>
+            </c:forEach>
 
-            </tr>
-            <tr>
-                <td>Jane Smith</td>
-                <td>jane@example.com</td>
-                <td>+1 555 123 456</td>
-                <td>456 Park Ave, CA</td>
-                <td>123456789V</td>
-                <td>987654321V</td>
-                <td>987654321V</td>
-            </tr>
             <!-- Add more rows as needed -->
             </tbody>
         </table>
@@ -863,6 +884,20 @@
                 item.classList.remove('active');
             });
             this.classList.add('active');
+        });
+    });
+
+    // Search filtering
+    document.getElementById('searchInput').addEventListener('input', function() {
+        const searchValue = this.value.toLowerCase();
+        const rows = document.querySelectorAll('#customerTableBody tr');
+        rows.forEach(row => {
+            const nic = row.getAttribute('data-nic').toLowerCase();
+            if (nic.includes(searchValue)) {
+                row.style.display = '';
+            } else {
+                row.style.display = 'none';
+            }
         });
     });
 </script>

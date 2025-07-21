@@ -4,8 +4,11 @@ import com.example.ee.core.model.*;
 import com.example.ee.core.service.AccountService;
 import com.example.ee.core.service.AuthService;
 import com.example.ee.core.service.CustomerService;
+import jakarta.annotation.security.DeclareRoles;
 import jakarta.ejb.EJB;
 import jakarta.servlet.ServletException;
+import jakarta.servlet.annotation.HttpConstraint;
+import jakarta.servlet.annotation.ServletSecurity;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
@@ -16,6 +19,8 @@ import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
 
+@DeclareRoles({"ADMIN","CUSTOMER"})
+@ServletSecurity(@HttpConstraint(rolesAllowed = {"ADMIN"}))
 @WebServlet("/account_register")
 public class AccountRegistration extends HttpServlet {
 

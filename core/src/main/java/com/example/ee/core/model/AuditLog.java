@@ -3,32 +3,38 @@ package com.example.ee.core.model;
 import jakarta.persistence.*;
 
 import java.io.Serializable;
-import java.time.LocalDateTime;
+import java.util.Date;
 
 @Entity
 @Table(name = "audit_log")
+@NamedQueries({
+        @NamedQuery(name = "AuditLog.findAllAuditLog",query = "select a from AuditLog a order by a.timestamp desc ")
+})
 public class AuditLog  implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long logId;
 
-    @ManyToOne
-    @JoinColumn(name = "user_id")
-    private User user;
+
+
+    private Double amount;
 
     private String action;
+
+    private String username;
 
     private boolean success;
 
     private String details;
 
-    private LocalDateTime timestamp;
+    private Date timestamp;
 
     public AuditLog() {
     }
 
-    public AuditLog(User user, String action, boolean success, String details, LocalDateTime timestamp) {
-        this.user = user;
+    public AuditLog(String username, Double amount, String action, boolean success, String details, Date timestamp) {
+        this.username = username;
+        this.amount = amount;
         this.action = action;
         this.success = success;
         this.details = details;
@@ -43,12 +49,20 @@ public class AuditLog  implements Serializable {
         this.logId = logId;
     }
 
-    public User getUser() {
-        return user;
+    public String getUsername() {
+        return username;
     }
 
-    public void setUser(User user) {
-        this.user = user;
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
+    public Double getAmount() {
+        return amount;
+    }
+
+    public void setAmount(Double amount) {
+        this.amount = amount;
     }
 
     public String getAction() {
@@ -75,11 +89,11 @@ public class AuditLog  implements Serializable {
         this.details = details;
     }
 
-    public LocalDateTime getTimestamp() {
+    public Date getTimestamp() {
         return timestamp;
     }
 
-    public void setTimestamp(LocalDateTime timestamp) {
+    public void setTimestamp(Date timestamp) {
         this.timestamp = timestamp;
     }
 }

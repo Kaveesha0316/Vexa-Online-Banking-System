@@ -17,5 +17,9 @@ public interface AccountService {
     Account findFixedAccountByCustomerId(Long customerId);
     double findMonthlyIncomeByCustomerId(Long customerId);
     Account findAccountById(Long accountId);
+    int findActiveAccountCount();
+    List<Account> findAllAccounts();
+    void ChangeStatus(Long accountId);
+    boolean makeDeposit(Account account, Double amount,String description);
 
 }

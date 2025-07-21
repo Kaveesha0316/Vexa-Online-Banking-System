@@ -6,8 +6,11 @@ import com.example.ee.core.model.ScheduledTransfer;
 import com.example.ee.core.model.Status;
 import com.example.ee.core.service.AccountService;
 import com.example.ee.core.service.ScheduledTransferService;
+import jakarta.annotation.security.DeclareRoles;
 import jakarta.ejb.EJB;
 import jakarta.servlet.ServletException;
+import jakarta.servlet.annotation.HttpConstraint;
+import jakarta.servlet.annotation.ServletSecurity;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
@@ -22,6 +25,8 @@ import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.Date;
 
+@DeclareRoles({"ADMIN","CUSTOMER"})
+@ServletSecurity(@HttpConstraint(rolesAllowed = {"CUSTOMER"}))
 @WebServlet("/schedule_transaction")
 public class SheduelTranction extends HttpServlet {
 

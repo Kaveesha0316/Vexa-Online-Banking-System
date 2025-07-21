@@ -4,6 +4,7 @@ import com.example.ee.core.model.Role;
 import com.example.ee.core.model.Status;
 import com.example.ee.core.model.User;
 import com.example.ee.core.service.AuthService;
+import com.example.ee.core.util.Encryption;
 import jakarta.ejb.EJB;
 import jakarta.inject.Inject;
 import jakarta.security.enterprise.AuthenticationStatus;
@@ -35,14 +36,14 @@ public class Login extends HttpServlet {
 
         try {
             AuthenticationParameters parameters = AuthenticationParameters.withParams()
-                    .credential(new UsernamePasswordCredential(username, password)
+                    .credential(new UsernamePasswordCredential(username, Encryption.encrypt(password))
                     );
 
             AuthenticationStatus status = securityContext.authenticate(req, resp, parameters);
 
             System.out.println(status);
             resp.setContentType("text/plain");
-            User user = authService.findByUserNameAndPassword(username, password);
+            User user = authService.findByUserNameAndPassword(username,  Encryption.encrypt(password));
 
             if (status == AuthenticationStatus.SUCCESS && user.getStatus() == Status.ACTIVE) {
 
@@ -60,10 +61,7 @@ public class Login extends HttpServlet {
             }else {
                 resp.getWriter().write("Invalid username or password or blocked");
                 System.out.println("Authentication failed");
-//            resp.sendError(500, "Internal Server Error");
-//            throw new ServletException("Authentication failed");
-//            resp.sendRedirect(req.getContextPath() + "/login.jsp");
-//            throw  new LoginFailedException("Login failed");
+
             }
         } catch (Exception e) {
             e.printStackTrace();

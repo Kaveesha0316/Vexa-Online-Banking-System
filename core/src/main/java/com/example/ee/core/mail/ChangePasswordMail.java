@@ -20,7 +20,6 @@ public class ChangePasswordMail extends Mailable{
         message.setRecipient(Message.RecipientType.TO, new InternetAddress(to));
         message.setSubject("Vexa Bank Password Change Verification Code");
 
-// Generate your code somewhere before this (e.g., String verificationCode = "123456";)
 
         String html =
                 "<div style=\"font-family:Arial,sans-serif;max-width:600px;margin:auto;padding:20px;"

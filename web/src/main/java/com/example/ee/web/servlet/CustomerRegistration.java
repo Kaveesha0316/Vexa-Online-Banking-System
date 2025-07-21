@@ -10,8 +10,12 @@ import com.example.ee.core.model.User;
 import com.example.ee.core.povider.MailServiceProvider;
 import com.example.ee.core.service.AuthService;
 import com.example.ee.core.service.CustomerService;
+import com.example.ee.core.util.Encryption;
+import jakarta.annotation.security.DeclareRoles;
 import jakarta.ejb.EJB;
 import jakarta.servlet.ServletException;
+import jakarta.servlet.annotation.HttpConstraint;
+import jakarta.servlet.annotation.ServletSecurity;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
@@ -23,7 +27,8 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.UUID;
-
+@DeclareRoles({"ADMIN","CUSTOMER"})
+@ServletSecurity(@HttpConstraint(rolesAllowed = {"ADMIN"}))
 @WebServlet("/customer_register")
 public class CustomerRegistration extends HttpServlet {
 
@@ -66,7 +71,7 @@ public class CustomerRegistration extends HttpServlet {
             String username = firstName + "_" + lastName;
             String password = generatePassword(12);
 
-            User user = new User(customer1,username,password, Role.CUSTOMER, Status.ACTIVE, LocalDateTime.now(),LocalDateTime.now());
+            User user = new User(customer1,username, Encryption.encrypt(password), Role.CUSTOMER, Status.ACTIVE, LocalDateTime.now(),LocalDateTime.now());
 
             authService.Save(user);
 

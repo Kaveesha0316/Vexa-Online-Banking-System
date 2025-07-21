@@ -15,5 +15,10 @@ public interface TransactionService {
     List<Transaction> findTransactionHistory(Long accountId);
     Double findMonthlyIncome(Long accountId);
     Double findMonthlyExpense(Long accountId);
+    List<Transaction> findlast5Transaction();
+    int findTotalTransactions();
+    List<Transaction> findAllTransactions();
+    Transaction findTransactionById(Long transactionId);
+
 
 }

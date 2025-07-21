@@ -9,6 +9,7 @@
         <class>com.example.ee.core.model.Customer</class>
         <class>com.example.ee.core.model.InterestAccrual</class>
         <class>com.example.ee.core.model.ScheduledTransfer</class>
+        <shared-cache-mode>NONE</shared-cache-mode>
         <properties>
             <property name="jakarta.persistence.schema-generation.database.action" value="create"/>
             <property name="jakarta.persistence.sharedCache,mode" value="NONE"/>

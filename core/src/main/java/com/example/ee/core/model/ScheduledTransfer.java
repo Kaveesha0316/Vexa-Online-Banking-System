@@ -10,7 +10,10 @@ import java.util.Date;
 @Table(name = "scheduled_transfers")
 @NamedQueries({
         @NamedQuery(name = "ScheduledTransfer.FindHistory", query = "select s from ScheduledTransfer s where s.fromAccount.accountId=:AccId order by s.createdAt DESC"),
-        @NamedQuery(name = "ScheduledTransfer.FindLast5History", query = "select s from ScheduledTransfer s where s.fromAccount.accountId=:AccId and s.scheduledDateTime > :date order by s.createdAt DESC")
+        @NamedQuery(name = "ScheduledTransfer.FindLast5History", query = "select s from ScheduledTransfer s where s.fromAccount.accountId=:AccId and s.scheduledDateTime > :date order by s.createdAt DESC"),
+        @NamedQuery(name = "ScheduledTransfer.FindpendingHistory", query = "select s from ScheduledTransfer s "),
+        @NamedQuery(name = "ScheduledTransfer.FindAllShedules", query = "select s from ScheduledTransfer s order by s.createdAt DESC")
+
 })
 public class ScheduledTransfer implements Serializable {
 

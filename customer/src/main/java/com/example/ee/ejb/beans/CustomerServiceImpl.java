@@ -2,6 +2,7 @@ package com.example.ee.ejb.beans;
 
 import com.example.ee.core.model.Customer;
 import com.example.ee.core.service.CustomerService;
+import jakarta.annotation.security.RolesAllowed;
 import jakarta.ejb.Stateless;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
@@ -16,6 +17,7 @@ public class CustomerServiceImpl implements CustomerService {
     @PersistenceContext
     private EntityManager em;
 
+    @RolesAllowed("ADMIN")
     @Override
     public Customer createCustomer(Customer customer) {
         em.persist(customer);
@@ -28,7 +30,7 @@ public class CustomerServiceImpl implements CustomerService {
             List<Customer> result = em.createNamedQuery("customer.findByEmail", Customer.class).setParameter("email", email).getResultList();
 
         if (result.isEmpty()) {
-            return null; // or throw custom NotFoundException
+            return null;
         } else {
             return result.get(0);
         }
@@ -47,4 +49,5 @@ public class CustomerServiceImpl implements CustomerService {
             return result.get(0);
         }
     }
+
 }

@@ -1,4 +1,12 @@
-<%--
+<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
+<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ page import="javax.naming.InitialContext" %>
+<%@ page import="com.example.ee.core.model.Customer" %>
+<%@ page import="com.example.ee.core.model.Transaction" %>
+<%@ page import="java.util.List" %>
+<%@ page import="com.example.ee.core.model.ScheduledTransfer" %>
+<%@ page import="com.example.ee.core.service.*" %><%--
   Created by IntelliJ IDEA.
   User: user
   Date: 7/6/2025
@@ -41,6 +49,98 @@
             color: #334155;
             display: flex;
             min-height: 100vh;
+        }
+
+        /* Recent Transactions */
+        .transactions {
+            overflow-x: auto;
+        }
+
+        .transactions table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .transactions th {
+            text-align: left;
+            padding: 12px 0;
+            font-weight: 500;
+            color: var(--secondary);
+            font-size: 14px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .transactions td {
+            padding: 16px 0;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .transaction-detail {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .transaction-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .icon-income {
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--success);
+        }
+
+        .icon-expense {
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--danger);
+        }
+
+        .icon-transfer {
+            background: rgba(37, 99, 235, 0.1);
+            color: var(--primary);
+        }
+
+        .transaction-info h4 {
+            font-weight: 500;
+            margin-bottom: 4px;
+            font-size: 15px;
+        }
+
+        .transaction-info p {
+            color: var(--secondary);
+            font-size: 13px;
+        }
+
+        .transaction-amount.positive {
+            color: var(--success);
+            font-weight: 500;
+        }
+
+        .transaction-amount.negative {
+            color: var(--danger);
+            font-weight: 500;
+        }
+
+        .transaction-status {
+            font-size: 12px;
+            padding: 4px 8px;
+            border-radius: 20px;
+            font-weight: 500;
+        }
+
+        .status-completed {
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--success);
+        }
+
+        .status-pending {
+            background: rgba(245, 158, 11, 0.1);
+            color: var(--warning);
         }
 
         /*!* Sidebar Styles *!*/
@@ -650,7 +750,7 @@
             </a>
         </li>
         <li>
-        <a href="#">
+            <a  href="${pageContext.request.contextPath}/logout" >
             <i class="fas fa-sign-out-alt"></i>
             <span>Logout</span>
         </a>
@@ -658,7 +758,41 @@
     </ul>
 </aside>
 
+<%
+    try {
 
+        InitialContext ic = new InitialContext();
+        AccountService accountService = (AccountService) ic.lookup("com.example.ee.core.service.AccountService");
+        TransactionService transactionService = (TransactionService) ic.lookup("com.example.ee.core.service.TransactionService");
+        AuthService authService = (AuthService) ic.lookup("com.example.ee.core.service.AuthService");
+
+        ScheduledTransferService scheduledTransferService = (ScheduledTransferService) ic.lookup("java:global/banking-system-ear/transaction-module/ScheduledTransferServiceImpl!com.example.ee.core.service.ScheduledTransferService");
+
+
+        Customer admin = (Customer) request.getSession().getAttribute("admin");
+
+
+        List<Transaction> transactionList = transactionService.findlast5Transaction();
+        int activeAccountCount = accountService.findActiveAccountCount();
+        int activeCustomers = authService.ActiveCustomerCount();
+        int totalTransactions = transactionService.findTotalTransactions();
+        int pendingTransactions = scheduledTransferService.getpendingTransactions();
+
+
+        System.out.println(transactionList);
+
+        pageContext.setAttribute("admin", admin);
+        pageContext.setAttribute("transList",transactionList);
+        pageContext.setAttribute("activeAccountCount",activeAccountCount);
+        pageContext.setAttribute("activeCustomers",activeCustomers);
+        pageContext.setAttribute("totalTransactions",totalTransactions);
+        pageContext.setAttribute("pendingTransactions",pendingTransactions);
+
+
+    } catch (Exception e) {
+        throw new RuntimeException(e);
+    }
+%>
 
 <!-- Main Content -->
 <div class="main-content">
@@ -678,7 +812,7 @@
                 <img src="https://ui-avatars.com/api/?name=Admin&background=2563eb&color=fff" alt="Admin">
                 <div class="user-info">
                     <h4>Administrator</h4>
-                    <p>Super Admin</p>
+                    <p>${admin.firstName} ${admin.lastName}</p>
                 </div>
             </div>
         </div>
@@ -693,7 +827,7 @@
                     <i class="fas fa-users"></i>
                 </div>
             </div>
-            <div class="stat-value">24,562</div>
+            <div class="stat-value">${activeCustomers}</div>
             <div class="stat-diff positive">
                 <i class="fas fa-arrow-up"></i>
                 <span>12.5% since last month</span>
@@ -707,7 +841,7 @@
                     <i class="fas fa-wallet"></i>
                 </div>
             </div>
-            <div class="stat-value">56,329</div>
+            <div class="stat-value">${activeAccountCount}</div>
             <div class="stat-diff positive">
                 <i class="fas fa-arrow-up"></i>
                 <span>8.3% since last month</span>
@@ -716,12 +850,12 @@
 
         <div class="stat-card">
             <div class="stat-header">
-                <div class="stat-title">Daily Transactions</div>
+                <div class="stat-title">Total Transactions</div>
                 <div class="stat-icon orange">
                     <i class="fas fa-exchange-alt"></i>
                 </div>
             </div>
-            <div class="stat-value">12,458</div>
+            <div class="stat-value">${totalTransactions}</div>
             <div class="stat-diff positive">
                 <i class="fas fa-arrow-up"></i>
                 <span>3.2% since yesterday</span>
@@ -735,7 +869,7 @@
                     <i class="fas fa-exclamation-circle"></i>
                 </div>
             </div>
-            <div class="stat-value">42</div>
+            <div class="stat-value">${pendingTransactions}</div>
             <div class="stat-diff negative">
                 <i class="fas fa-arrow-down"></i>
                 <span>2.3% since yesterday</span>
@@ -751,58 +885,34 @@
                 <div class="card-title">Recent Transactions</div>
                 <div class="card-action">View All</div>
             </div>
-            <ul class="transaction-list">
-                <li class="transaction-item">
-                    <div class="transaction-icon blue">
-                        <i class="fas fa-arrow-down"></i>
-                    </div>
-                    <div class="transaction-info">
-                        <h4>Deposit from John Doe</h4>
-                        <p>Savings Account  10:24 AM</p>
-                    </div>
-                    <div class="transaction-amount positive">+$1,250.00</div>
-                </li>
-                <li class="transaction-item">
-                    <div class="transaction-icon green">
-                        <i class="fas fa-arrow-up"></i>
-                    </div>
-                    <div class="transaction-info">
-                        <h4>Transfer to Jane Smith</h4>
-                        <p>Checking Account • 09:45 AM</p>
-                    </div>
-                    <div class="transaction-amount negative">-$500.00</div>
-                </li>
-                <li class="transaction-item">
-                    <div class="transaction-icon orange">
-                        <i class="fas fa-credit-card"></i>
-                    </div>
-                    <div class="transaction-info">
-                        <h4>Credit Card Payment</h4>
-                        <p>Visa Platinum • 08:32 AM</p>
-                    </div>
-                    <div class="transaction-amount negative">-$1,200.00</div>
-                </li>
-                <li class="transaction-item">
-                    <div class="transaction-icon blue">
-                        <i class="fas fa-building"></i>
-                    </div>
-                    <div class="transaction-info">
-                        <h4>Salary Deposit</h4>
-                        <p>ABC Corporation • Yesterday</p>
-                    </div>
-                    <div class="transaction-amount positive">+$4,500.00</div>
-                </li>
-                <li class="transaction-item">
-                    <div class="transaction-icon red">
-                        <i class="fas fa-coins"></i>
-                    </div>
-                    <div class="transaction-info">
-                        <h4>Loan Repayment</h4>
-                        <p>Home Loan • Yesterday</p>
-                    </div>
-                    <div class="transaction-amount negative">-$1,800.00</div>
-                </li>
-            </ul>
+            <div class="transactions">
+                <table>
+                    <thead>
+                    <tr>
+                        <th>DESCRIPTION</th>
+                        <th>DATE</th>
+                        <th>AMOUNT</th>
+                        <th>STATUS</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <c:forEach var="transaction" items="${transList}">
+                        <tr>
+                            <td>
+                                <div class="transaction-detail">
+                                    <div class="transaction-info">
+                                        <h4>${transaction.description}</h4>
+                                    </div>
+                                </div>
+                            </td>
+                            <td><fmt:formatDate value="${transaction.createdAt}" pattern="MMM d, yyyy" /></td>
+                            <td class="transaction-amount positive">Rs.${transaction.amount}</td>
+                            <td><span class="transaction-status status-completed">Completed</span></td>
+                        </tr>
+                    </c:forEach>
+                    </tbody>
+                </table>
+            </div>
         </div>
 
         <!-- Quick Actions -->
@@ -811,32 +921,24 @@
                 <div class="card-title">Quick Actions</div>
             </div>
             <div class="quick-actions">
-                <a  href="customerRegistration.jsp">
+                <a  style="text-decoration: none" href="customerRegistration.jsp">
                 <div class="action-button">
                     <i class="fas fa-user-plus"></i>
                     <span>New Customer</span>
                 </div>
                 </a>
-                <a  href="accoutRegistration.jsp">
+                <a  style="text-decoration: none" href="accoutRegistration.jsp">
                 <div class="action-button">
                     <i class="fas fa-plus-circle"></i>
                     <span>Create Account</span>
                 </div>
                 </a>
-                <a href="adminTransaction.jsp">
+                <a style="text-decoration: none" href="adminTransaction.jsp">
                 <div class="action-button">
                     <i class="fas fa-file-invoice-dollar"></i>
-                    <span>New Transaction</span>
+                    <span>Money Deposit</span>
                 </div>
                 </a>
-                <div class="action-button">
-                    <i class="fas fa-file-export"></i>
-                    <span>Generate Report</span>
-                </div>
-                <div class="action-button">
-                    <i class="fas fa-bell"></i>
-                    <span>Set Reminder</span>
-                </div>
                 <div class="action-button">
                     <i class="fas fa-cog"></i>
                     <span>Settings</span>

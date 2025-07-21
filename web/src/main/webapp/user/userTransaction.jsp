@@ -881,14 +881,19 @@
             if (responseText.trim() === "success") {
                 Swal.fire({
                     title: 'Success!',
-                    text: 'The account has been registered successfully.',
+                    text: 'Transaction completed successfully.',
                     icon: 'success',
-                    confirmButtonText: 'OK'
+                    showCancelButton: true,
+                    confirmButtonText: 'Download Slip',
+                    cancelButtonText: 'Close'
                 }).then((result) => {
                     if (result.isConfirmed) {
-                        // Reload the page
-                        location.reload();
+                        window.open("/banking-system/user/transactionSlip?from=" + encodeURIComponent(from) +
+                            "&to=" + encodeURIComponent(to) +
+                            "&amount=" + encodeURIComponent(amount) +
+                            "&desc=" + encodeURIComponent(desc), "_blank");
                     }
+                    location.reload();
                 });
             }else {
                 Swal.fire({

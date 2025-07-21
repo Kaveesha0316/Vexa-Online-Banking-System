@@ -9,4 +9,6 @@ public interface ScheduledTransferService {
     void cancel(Long scheduleId);
     List<ScheduledTransfer> getScheduledTransfersBYAccountId(Long accountId);
     List<ScheduledTransfer> get5ScheduledTransfersBYAccountId(Long accountId);
+    int getpendingTransactions();
+    List<ScheduledTransfer> findAllScheduledTransfers();
 }

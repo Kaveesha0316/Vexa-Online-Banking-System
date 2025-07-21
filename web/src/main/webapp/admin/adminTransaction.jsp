@@ -680,7 +680,7 @@
             </a>
         </li>
         <li>
-            <a href="#">
+            <a  href="${pageContext.request.contextPath}/logout" >
                 <i class="fas fa-sign-out-alt"></i>
                 <span>Logout</span>
             </a>
@@ -721,7 +721,7 @@
                     <label for="balance">Amount<span>*</span></label>
                     <div class="input-with-icon">
                         <i class="fas fa-money-bill-wave"></i>
-                        <input type="tel" id="balance" placeholder="0" required>
+                        <input type="number" min="0" id="balance" placeholder="0" required>
                     </div>
                 </div>
             </div>
@@ -740,7 +740,7 @@
 
             <div class="form-actions">
 
-                <button type="submit" class="btn btn-primary">
+                <button type="button" onclick="transfer();" class="btn btn-primary">
                     <i class="fas fa-arrow-right"></i> Deposit
                 </button>
             </div>
@@ -792,6 +792,80 @@
             this.classList.add('active');
         });
     });
+
+    async function transfer(event) {
+
+        if (event) event.preventDefault();
+
+        const to = document.getElementById("acc").value;
+        const amount = document.getElementById("balance").value.trim();
+        const desc = document.getElementById("dcs").value.trim();
+
+
+
+        if (!to || !amount || !desc) {
+            Swal.fire({
+                icon: "error",
+                title: "Missing Fields",
+                text: "Please fill in all fields."
+            });
+            return;
+        }
+
+        if (amount <= 0) {
+            Swal.fire({
+                icon: "error",
+                title: "Amount must be greater than 0",
+                text: "Please enter an amount greater than 0"
+            });
+            return;
+        }
+
+        const formData = new URLSearchParams();
+        formData.append("to", to);
+        formData.append("amount", amount);
+        formData.append("desc", desc);
+
+        try {
+            const response = await fetch("/banking-system/make_deposit_transfer", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/x-www-form-urlencoded"
+                },
+                body: formData.toString()
+            });
+
+            const responseText = await response.text();
+            if (responseText.trim() === "success") {
+                Swal.fire({
+                    title: 'Success!',
+                    text: 'The account has been registered successfully.',
+                    icon: 'success',
+                    confirmButtonText: 'OK'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        // Reload the page
+                        location.reload();
+                    }
+                });
+            }else {
+                Swal.fire({
+                    icon: "error",
+                    title: responseText.trim(),
+                    text: "Something went wrong. Please try again."
+                });
+            }
+        } catch (err) {
+            console.error("Error:", err);
+            Swal.fire({
+                icon: "error",
+                title: "Network Error",
+                text: "Unable to connect to server."
+            });
+        }
+    }
+
 </script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </body>
 </html>

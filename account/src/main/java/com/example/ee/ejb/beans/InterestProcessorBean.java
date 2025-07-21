@@ -64,7 +64,7 @@ public class InterestProcessorBean {
 
             } catch (Exception ex) {
                 ex.printStackTrace();
-                // Log error, continue with next account
+
             }
         }
     }

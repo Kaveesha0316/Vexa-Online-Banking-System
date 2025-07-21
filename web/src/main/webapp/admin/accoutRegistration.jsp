@@ -680,7 +680,7 @@
             </a>
         </li>
         <li>
-            <a href="#">
+            <a  href="${pageContext.request.contextPath}/logout" >
                 <i class="fas fa-sign-out-alt"></i>
                 <span>Logout</span>
             </a>
@@ -829,14 +829,14 @@
     });
 
     async function create(event) {
-        // ✅ Prevent default form submission
+
         if (event) event.preventDefault();
 
         const nic = document.getElementById("nic").value.trim();
         const balance = document.getElementById("balance").value.trim();
         const state = document.getElementById("state").value;
 
-        // ✅ Check empty fields
+
         if (!nic || !balance || !state) {
             Swal.fire({
                 icon: "error",

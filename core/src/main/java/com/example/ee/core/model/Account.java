@@ -14,7 +14,9 @@ import java.util.List;
         @NamedQuery(name = "Account.getCuscount", query = "select a from Account a where a.customer.customerId =:customerId"),
         @NamedQuery(name = "Account.findByAccountNo", query = "select a from Account a where a.accountNumber =:accountNo"),
         @NamedQuery(name = "Account.findByCustomerId", query = "select a from Account a where a.customer.customerId =:customerId"),
-        @NamedQuery(name = "Account.findAllAccounts", query = "select a from Account a where a.status =:sts")
+        @NamedQuery(name = "Account.findAllAccounts", query = "select a from Account a where a.status =:sts"),
+        @NamedQuery(name = "Account.findAccountById", query = "select a from Account a where a.accountId =:Id"),
+        @NamedQuery(name = "Account.findAllAccountHistory", query = "select a from Account a order by a.createdAt desc ")
 })
 public class Account implements Serializable {
 

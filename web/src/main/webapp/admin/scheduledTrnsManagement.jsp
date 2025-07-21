@@ -1,10 +1,17 @@
-<%--
+<%@ page import="javax.naming.InitialContext" %>
+<%@ page import="com.example.ee.core.model.Customer" %>
+<%@ page import="com.example.ee.core.service.ScheduledTransferService" %>
+<%@ page import="com.example.ee.core.model.ScheduledTransfer" %>
+<%@ page import="java.util.List" %><%--
   Created by IntelliJ IDEA.
   User: user
   Date: 7/6/2025
   Time: 3:48 PM
   To change this template use File | Settings | File Templates.
 --%>
+<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
+<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -738,7 +745,7 @@
       </a>
     </li>
     <li>
-      <a href="#">
+      <a  href="${pageContext.request.contextPath}/logout" >
         <i class="fas fa-sign-out-alt"></i>
         <span>Logout</span>
       </a>
@@ -746,7 +753,24 @@
   </ul>
 </aside>
 
+<%
+  try {
 
+    InitialContext ic = new InitialContext();
+    ScheduledTransferService scheduledTransferService = (ScheduledTransferService) ic.lookup("java:global/banking-system-ear/transaction-module/ScheduledTransferServiceImpl!com.example.ee.core.service.ScheduledTransferService");
+
+    Customer admin = (Customer) request.getSession().getAttribute("admin");
+
+    List<ScheduledTransfer> scheduledTransferList = scheduledTransferService.findAllScheduledTransfers();
+
+    pageContext.setAttribute("admin", admin);
+    pageContext.setAttribute("scheduledTransferList",scheduledTransferList);
+
+
+  } catch (Exception e) {
+    throw new RuntimeException(e);
+  }
+%>
 
 <!-- Main Content -->
 <div class="main-content">
@@ -767,7 +791,7 @@
         <th>From Acc</th>
         <th>To Acc</th>
         <th>Amount</th>
-        <th>Next Execution date</th>
+        <th>Scheduled date</th>
         <th>Status</th>
         <th>Date</th>
 
@@ -775,25 +799,17 @@
       </thead>
       <tbody id="customerTableBody">
       <!-- Example rows -->
-      <tr>
-        <td>John Doe</td>
-        <td>john@example.com</td>
-        <td>+1 234 567 890</td>
-        <td>123 Main St, NY</td>
-        <td>987654321V</td>
-        <td>987654321V</td>
-
-
+      <c:forEach var="schedule" items="${scheduledTransferList}">
+        <tr data-nic="${schedule.fromAccount.accountNumber}">
+        <td>${schedule.fromAccount.accountNumber}</td>
+        <td>${schedule.toAccount.accountNumber}</td>
+        <td>${schedule.amount}</td>
+        <td><fmt:formatDate value="${schedule.scheduledDateTime}" pattern="MMM d, yyyy hh:mm a" /></td>
+        <td>${schedule.scheduleSts.toString()}</td>
+        <td><fmt:formatDate value="${schedule.createdAt}" pattern="MMM d, yyyy hh:mm a" /></td>
       </tr>
-      <tr>
-        <td>Jane Smith</td>
-        <td>jane@example.com</td>
-        <td>+1 555 123 456</td>
-        <td>456 Park Ave, CA</td>
-        <td>123456789V</td>
-        <td>987654321V</td>
+      </c:forEach>
 
-      </tr>
       <!-- Add more rows as needed -->
       </tbody>
     </table>
@@ -839,6 +855,21 @@
       this.classList.add('active');
     });
   });
+
+  // Search filtering
+  document.getElementById('searchInput').addEventListener('input', function() {
+    const searchValue = this.value.toLowerCase();
+    const rows = document.querySelectorAll('#customerTableBody tr');
+    rows.forEach(row => {
+      const nic = row.getAttribute('data-nic').toLowerCase();
+      if (nic.includes(searchValue)) {
+        row.style.display = '';
+      } else {
+        row.style.display = 'none';
+      }
+    });
+  });
+
 </script>
 </body>
 </html>
